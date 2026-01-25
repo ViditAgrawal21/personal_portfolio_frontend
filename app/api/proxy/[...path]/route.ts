@@ -7,17 +7,25 @@ export async function GET(request: NextRequest) {
     // Extract the path from the request URL
     const url = new URL(request.url);
     const path = url.pathname.replace('/api/proxy', '');
+    const queryString = url.search;
+    const fullPath = `${path}${queryString}`;
+    
+    console.log(`Proxying GET request to: ${BACKEND_URL}${fullPath}`);
     
     // Forward the request to the backend
-    const backendResponse = await fetch(`${BACKEND_URL}${path}`, {
+    const backendResponse = await fetch(`${BACKEND_URL}${fullPath}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
     });
 
+    console.log(`Backend response status: ${backendResponse.status}`);
+    
     if (!backendResponse.ok) {
-      throw new Error(`Backend responded with status: ${backendResponse.status}`);
+      const errorText = await backendResponse.text();
+      console.error(`Backend error: ${backendResponse.status} - ${errorText}`);
+      throw new Error(`Backend responded with status: ${backendResponse.status} - ${errorText}`);
     }
 
     const data = await backendResponse.json();
@@ -34,8 +42,9 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Proxy error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to fetch data from backend' },
+      { error: 'Failed to fetch data from backend', details: errorMessage },
       { 
         status: 500,
         headers: {
@@ -79,8 +88,9 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Proxy error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to fetch data from backend' },
+      { error: 'Failed to fetch data from backend', details: errorMessage },
       { 
         status: 500,
         headers: {
