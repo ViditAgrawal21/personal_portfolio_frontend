@@ -2,15 +2,15 @@
 export const getApiBaseUrl = () => {
   // Check if we're in production or development
   if (typeof window !== 'undefined') {
-    // Client-side detection
+    // Client-side detection - use proxy in production to avoid CORS
     return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:5000'
-      : 'https://personal-portfolio-backend-ec6a.onrender.com';
+      : '/api/proxy'; // Use Next.js API proxy for CORS
   }
   
   // Server-side detection using NODE_ENV or environment variable
   return process.env.NODE_ENV === 'production' 
-    ? 'https://personal-portfolio-backend-ec6a.onrender.com'
+    ? '/api/proxy' // Use Next.js API proxy for CORS
     : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 };
 

@@ -1,0 +1,75 @@
+{
+  "name": "Vidit Agrawal | Full Stack Developer Portfolio",
+  "short_name": "Vidit Portfolio",
+  "description": "Professional portfolio showcasing full-stack development expertise",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#00ff41",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512", 
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-apple-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "View Projects",
+      "short_name": "Projects",
+      "description": "Browse my development projects",
+      "url": "/portfolio/projects",
+      "icons": [
+        {
+          "src": "/icons/projects-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Contact Me",
+      "short_name": "Hire",
+      "description": "Get in touch for opportunities",
+      "url": "/portfolio/hire",
+      "icons": [
+        {
+          "src": "/icons/contact-96.png", 
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Tech Stack",
+      "short_name": "Stack",
+      "description": "My technical expertise",
+      "url": "/portfolio/stack",
+      "icons": [
+        {
+          "src": "/icons/tech-96.png",
+          "sizes": "96x96", 
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "categories": ["business", "productivity", "developer"],
+  "prefer_related_applications": false
+}
