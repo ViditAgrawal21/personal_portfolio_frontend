@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAdminStore } from '@/store/admin-store';
+import { useUIStore } from '@/store/ui-store';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { motion } from 'framer-motion';
 
 export default function AdminLayout({
   children,
@@ -13,6 +15,7 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated } = useAdminStore();
+  const { adminSidebarOpen } = useUIStore();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -47,9 +50,16 @@ export default function AdminLayout({
   return (
     <div className="flex h-screen bg-[#0f1419] overflow-hidden">
       <AdminSidebar />
-      <main className="flex-1 overflow-auto">
+      <motion.main
+        animate={{ 
+          marginLeft: 0,
+          width: `calc(100% - ${adminSidebarOpen ? '256px' : '64px'})`
+        }}
+        transition={{ duration: 0.3, ease: 'easeInOut' }}
+        className="flex-1 overflow-auto"
+      >
         {children}
-      </main>
+      </motion.main>
     </div>
   );
 }

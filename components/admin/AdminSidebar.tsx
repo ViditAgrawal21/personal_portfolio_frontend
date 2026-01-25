@@ -3,12 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAdminStore } from '@/store/admin-store';
+import { useUIStore } from '@/store/ui-store';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const { logout } = useAdminStore();
+  const { adminSidebarOpen, toggleAdminSidebar } = useUIStore();
   const router = useRouter();
 
   const menuItems = [
@@ -106,19 +108,44 @@ export function AdminSidebar() {
   };
 
   return (
-    <aside className="w-64 bg-[#1a1625] border-r border-gray-800 flex flex-col h-screen">
+    <motion.aside
+      animate={{ width: adminSidebarOpen ? 256 : 64 }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      className="bg-[#1a1625] border-r border-gray-800 flex flex-col h-screen relative"
+    >
+      {/* Toggle Button */}
+      <button
+        onClick={toggleAdminSidebar}
+        className="absolute -right-3 top-6 w-6 h-6 bg-[#1a1625] border border-gray-800 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-purple-600 transition-all z-10"
+      >
+        <motion.svg
+          animate={{ rotate: adminSidebarOpen ? 0 : 180 }}
+          transition={{ duration: 0.3 }}
+          className="w-3 h-3"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </motion.svg>
+      </button>
+
       {/* Logo */}
       <div className="p-6 border-b border-gray-800">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
             <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
               <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
             </svg>
           </div>
-          <div>
+          <motion.div
+            animate={{ opacity: adminSidebarOpen ? 1 : 0, x: adminSidebarOpen ? 0 : -20 }}
+            transition={{ duration: 0.3, delay: adminSidebarOpen ? 0.1 : 0 }}
+            style={{ display: adminSidebarOpen ? 'block' : 'none' }}
+          >
             <h1 className="text-white font-bold">DevPort</h1>
             <p className="text-xs text-gray-400">ADMIN PANEL</p>
-          </div>
+          </motion.div>
         </div>
       </div>
 
@@ -126,68 +153,108 @@ export function AdminSidebar() {
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {menuItems.map((item, index) => {
           if (item.isHeader) {
-            return (
+            return adminSidebarOpen ? (
               <div key={index} className="pt-4 pb-2 px-4">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <motion.p
+                  animate={{ opacity: adminSidebarOpen ? 1 : 0 }}
+                  transition={{ duration: 0.3, delay: adminSidebarOpen ? 0.2 : 0 }}
+                  className="text-xs font-semibold text-gray-500 uppercase tracking-wider"
+                >
                   {item.label}
-                </p>
+                </motion.p>
+              </div>
+            ) : (
+              <div key={index} className="pt-4 pb-2 px-2">
+                <div className="h-px bg-gray-800 mx-2"></div>
               </div>
             );
           }
           
           const isActive = pathname === item.href;
           return (
-            <Link
-              key={item.href}
-              href={item.href!}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all group relative ${
-                isActive
-                  ? 'bg-purple-600 text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-[#2a2534]'
-              }`}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="activeTab"
-                  className="absolute inset-0 bg-purple-600 rounded-lg"
-                  initial={false}
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
-              )}
-              <span className="relative z-10">{item.icon}</span>
-              <span className="relative z-10 font-medium">{item.label}</span>
-              {item.badge && (
-                <span className="relative z-10 ml-auto px-2 py-0.5 bg-purple-500 text-white text-xs rounded-full">
-                  {item.badge}
+            <div key={item.href} className="relative group">
+              <Link
+                href={item.href!}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all group relative ${
+                  isActive
+                    ? 'bg-purple-600 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-[#2a2534]'
+                } ${!adminSidebarOpen ? 'justify-center px-2' : ''}`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute inset-0 bg-purple-600 rounded-lg"
+                    initial={false}
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                )}
+                <span className={`relative z-10 ${!adminSidebarOpen ? 'flex items-center justify-center' : ''}`}>
+                  {item.icon}
                 </span>
+                <motion.span
+                  animate={{ opacity: adminSidebarOpen ? 1 : 0, x: adminSidebarOpen ? 0 : -20 }}
+                  transition={{ duration: 0.3, delay: adminSidebarOpen ? 0.1 : 0 }}
+                  className={`relative z-10 font-medium ${!adminSidebarOpen ? 'sr-only' : ''}`}
+                >
+                  {item.label}
+                </motion.span>
+                {item.badge && adminSidebarOpen && (
+                  <motion.span
+                    animate={{ opacity: adminSidebarOpen ? 1 : 0 }}
+                    transition={{ duration: 0.3, delay: adminSidebarOpen ? 0.2 : 0 }}
+                    className="relative z-10 ml-auto px-2 py-0.5 bg-purple-500 text-white text-xs rounded-full"
+                  >
+                    {item.badge}
+                  </motion.span>
+                )}
+              </Link>
+              
+              {/* Tooltip for collapsed state */}
+              {!adminSidebarOpen && (
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 whitespace-nowrap">
+                  {item.label}
+                  {item.badge && (
+                    <span className="ml-2 px-1.5 py-0.5 bg-purple-500 text-white text-xs rounded-full">
+                      {item.badge}
+                    </span>
+                  )}
+                </div>
               )}
-            </Link>
+            </div>
           );
         })}
       </nav>
 
       {/* Bottom Actions */}
       <div className="p-4 border-t border-gray-800 space-y-2">
-        {/* <Link
-          href="/admin/settings"
-          className="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-[#2a2534] rounded-lg transition-all"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <span className="font-medium">Settings</span>
-        </Link> */}
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          <span className="font-medium">Logout</span>
-        </button>
+        <div className="relative group">
+          <button
+            onClick={handleLogout}
+            className={`w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all ${
+              !adminSidebarOpen ? 'justify-center px-2' : ''
+            }`}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <motion.span
+              animate={{ opacity: adminSidebarOpen ? 1 : 0, x: adminSidebarOpen ? 0 : -20 }}
+              transition={{ duration: 0.3, delay: adminSidebarOpen ? 0.1 : 0 }}
+              className={`font-medium ${!adminSidebarOpen ? 'sr-only' : ''}`}
+            >
+              Logout
+            </motion.span>
+          </button>
+          
+          {/* Tooltip for collapsed state */}
+          {!adminSidebarOpen && (
+            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 whitespace-nowrap">
+              Logout
+            </div>
+          )}
+        </div>
       </div>
-    </aside>
+    </motion.aside>
   );
 }

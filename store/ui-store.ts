@@ -1,19 +1,23 @@
 import { create } from 'zustand';
 
 interface UIState {
-  sidebarOpen: boolean;
+  adminSidebarOpen: boolean;
+  portfolioSidebarOpen: boolean;
   terminalOpen: boolean;
   theme: 'dark' | 'light';
-  toggleSidebar: () => void;
+  toggleAdminSidebar: () => void;
+  togglePortfolioSidebar: () => void;
   toggleTerminal: () => void;
   setTheme: (theme: 'dark' | 'light') => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  sidebarOpen: true,
+  adminSidebarOpen: true,
+  portfolioSidebarOpen: true,
   terminalOpen: true,
   theme: 'dark',
-  toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+  toggleAdminSidebar: () => set((state) => ({ adminSidebarOpen: !state.adminSidebarOpen })),
+  togglePortfolioSidebar: () => set((state) => ({ portfolioSidebarOpen: !state.portfolioSidebarOpen })),
   toggleTerminal: () => set((state) => ({ terminalOpen: !state.terminalOpen })),
   setTheme: (theme) => set({ theme }),
 }));

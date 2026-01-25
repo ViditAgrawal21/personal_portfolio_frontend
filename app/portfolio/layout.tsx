@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { IDESidebar } from '@/components/portfolio/IDESidebar';
 import { IDETerminal } from '@/components/portfolio/IDETerminal';
 import { IDETransition } from '@/components/portfolio/IDETransition';
+import { useUIStore } from '@/store/ui-store';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const fileIcons: Record<string, string> = {
@@ -41,6 +42,7 @@ export default function PortfolioLayout({
   const [showTransition, setShowTransition] = useState(true);
   const [openTabs, setOpenTabs] = useState<string[]>(['about']);
   const [terminalOpen, setTerminalOpen] = useState(true);
+  const { portfolioSidebarOpen } = useUIStore();
 
   useEffect(() => {
     // Check if coming from intro
@@ -71,7 +73,13 @@ export default function PortfolioLayout({
         <IDESidebar />
 
         {/* Main content area */}
-        <div className="flex-1 flex flex-col">
+        <motion.div
+          animate={{ 
+            width: `calc(100% - ${portfolioSidebarOpen ? '256px' : '64px'})`
+          }}
+          transition={{ duration: 0.3, ease: 'easeInOut' }}
+          className="flex-1 flex flex-col"
+        >
           {/* Top menu bar */}
           <motion.div
             initial={{ y: -50, opacity: 0 }}
@@ -236,7 +244,7 @@ export default function PortfolioLayout({
               </button>
             </div>
           </motion.div>
-        </div>
+        </motion.div>
       </div>
     </>
   );
