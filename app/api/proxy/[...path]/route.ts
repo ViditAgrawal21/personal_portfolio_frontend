@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const path = url.pathname.replace('/api/proxy', '');
     const queryString = url.search;
-    const fullPath = `${path}${queryString}`;
+    const fullPath = `/api${path}${queryString}`;
     
     console.log(`Proxying GET request to: ${BACKEND_URL}${fullPath}`);
     
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     const url = new URL(request.url);
     const path = url.pathname.replace('/api/proxy', '');
     const queryString = url.search;
-    const fullPath = `${path}${queryString}`;
+    const fullPath = `/api${path}${queryString}`;
     const body = await request.json();
 
     console.log(`Proxying POST request to: ${BACKEND_URL}${fullPath}`);
