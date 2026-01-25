@@ -43,17 +43,17 @@ async function fetchAPI<T>(endpoint: string): Promise<T> {
 
 // Get all portfolio content (recommended for initial load)
 export async function getAllContent(): Promise<PortfolioContent> {
-  return fetchAPI<PortfolioContent>('/api/content/all');
+  return fetchAPI<PortfolioContent>('/content/all');
 }
 
 // Get about section
 export async function getAbout(): Promise<About | null> {
-  return fetchAPI<About | null>('/api/content/about');
+  return fetchAPI<About | null>('/content/about');
 }
 
 // Get services
 export async function getServices(): Promise<Service[]> {
-  return fetchAPI<Service[]>('/api/content/services');
+  return fetchAPI<Service[]>('/content/services');
 }
 
 // Get projects
@@ -70,7 +70,7 @@ export async function getProjects(params?: {
   }
   
   const query = searchParams.toString();
-  const endpoint = `/api/content/projects${query ? `?${query}` : ''}`;
+  const endpoint = `/content/projects${query ? `?${query}` : ''}`;
   
   return fetchAPI<Project[]>(endpoint);
 }
@@ -78,20 +78,19 @@ export async function getProjects(params?: {
 // Get tech stack
 export async function getTechStack(category?: string): Promise<TechStack[]> {
   const endpoint = category 
-    ? `/api/content/stack?category=${encodeURIComponent(category)}`
-    : '/api/content/stack';
-  
+    ? `/content/stack?category=${encodeURIComponent(category)}`
+    : '/content/stack';
   return fetchAPI<TechStack[]>(endpoint);
 }
 
 // Get experience
 export async function getExperience(): Promise<Experience[]> {
-  return fetchAPI<Experience[]>('/api/content/experience');
+  return fetchAPI<Experience[]>('/content/experience');
 }
 
 // Get education
 export async function getEducation(): Promise<Education[]> {
-  return fetchAPI<Education[]>('/api/content/education');
+  return fetchAPI<Education[]>('/content/education');
 }
 
 // Utility functions

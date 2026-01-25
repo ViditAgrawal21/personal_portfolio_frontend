@@ -39,8 +39,8 @@ async function apiRequest<T>(
 
 // ABOUT API
 export const aboutAPI = {
-  get: () => apiRequest<any>('/api/content/about'),
-  update: (data: any) => apiRequest('/api/admin/content/about', {
+  get: () => apiRequest<any>('/content/about'),
+  update: (data: any) => apiRequest('/admin/content/about', {
     method: 'PUT',
     body: JSON.stringify(data),
   }),
@@ -48,77 +48,77 @@ export const aboutAPI = {
 
 // SERVICES API
 export const servicesAPI = {
-  getAll: () => apiRequest<any[]>('/api/content/services'),
-  getById: (id: string) => apiRequest(`/api/admin/content/services/${id}`),
-  create: (data: any) => apiRequest('/api/admin/content/services', {
+  getAll: () => apiRequest<any[]>('/content/services'),
+  getById: (id: string) => apiRequest(`/admin/content/services/${id}`),
+  create: (data: any) => apiRequest('/admin/content/services', {
     method: 'POST',
     body: JSON.stringify(data),
   }),
-  update: (id: string, data: any) => apiRequest(`/api/admin/content/services/${id}`, {
+  update: (id: string, data: any) => apiRequest(`/admin/content/services/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   }),
-  delete: (id: string) => apiRequest(`/api/admin/content/services/${id}`, {
+  delete: (id: string) => apiRequest(`/admin/content/services/${id}`, {
     method: 'DELETE',
   }),
 };
 
 // PROJECTS API
 export const projectsAPI = {
-  getAll: () => apiRequest<any[]>('/api/content/projects'),
-  getById: (id: string) => apiRequest(`/api/admin/content/projects/${id}`),
-  create: (data: any) => apiRequest('/api/admin/content/projects', {
+  getAll: () => apiRequest<any[]>('/content/projects'),
+  getById: (id: string) => apiRequest(`/admin/content/projects/${id}`),
+  create: (data: any) => apiRequest('/admin/content/projects', {
     method: 'POST',
     body: JSON.stringify(data),
   }),
-  update: (id: string, data: any) => apiRequest(`/api/admin/content/projects/${id}`, {
+  update: (id: string, data: any) => apiRequest(`/admin/content/projects/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   }),
-  delete: (id: string) => apiRequest(`/api/admin/content/projects/${id}`, {
+  delete: (id: string) => apiRequest(`/admin/content/projects/${id}`, {
     method: 'DELETE',
   }),
 };
 
 // TECH STACK API
 export const techStackAPI = {
-  getAll: () => apiRequest<any[]>('/api/content/stack'),
-  getById: (id: string) => apiRequest(`/api/admin/content/stack/${id}`),
-  create: (data: any) => apiRequest('/api/admin/content/stack', {
+  getAll: () => apiRequest<any[]>('/content/stack'),
+  getById: (id: string) => apiRequest(`/admin/content/stack/${id}`),
+  create: (data: any) => apiRequest('/admin/content/stack', {
     method: 'POST',
     body: JSON.stringify(data),
   }),
-  update: (id: string, data: any) => apiRequest(`/api/admin/content/stack/${id}`, {
+  update: (id: string, data: any) => apiRequest(`/admin/content/stack/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   }),
-  delete: (id: string) => apiRequest(`/api/admin/content/stack/${id}`, {
+  delete: (id: string) => apiRequest(`/admin/content/stack/${id}`, {
     method: 'DELETE',
   }),
 };
 
 // EXPERIENCE API
 export const experienceAPI = {
-  getAll: () => apiRequest<any[]>('/api/content/experience'),
-  getById: (id: string) => apiRequest(`/api/admin/content/experience/${id}`),
-  create: (data: any) => apiRequest('/api/admin/content/experience', {
+  getAll: () => apiRequest<any[]>('/content/experience'),
+  getById: (id: string) => apiRequest(`/admin/content/experience/${id}`),
+  create: (data: any) => apiRequest('/admin/content/experience', {
     method: 'POST',
     body: JSON.stringify(data),
   }),
-  update: (id: string, data: any) => apiRequest(`/api/admin/content/experience/${id}`, {
+  update: (id: string, data: any) => apiRequest(`/admin/content/experience/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   }),
-  delete: (id: string) => apiRequest(`/api/admin/content/experience/${id}`, {
+  delete: (id: string) => apiRequest(`/admin/content/experience/${id}`, {
     method: 'DELETE',
   }),
 };
 
 // EDUCATION API
 export const educationAPI = {
-  getAll: () => apiRequest<any[]>('/api/content/education'),
-  getById: (id: string) => apiRequest(`/api/admin/content/education/${id}`),
-  create: (data: any) => apiRequest('/api/admin/content/education', {
+  getAll: () => apiRequest<any[]>('/content/education'),
+  getById: (id: string) => apiRequest(`/admin/content/education/${id}`),
+  create: (data: any) => apiRequest('/admin/content/education', {
     method: 'POST',
     body: JSON.stringify(data),
   }),
@@ -136,7 +136,7 @@ export const uploadImage = async (file: File): Promise<string> => {
   const formData = new FormData();
   formData.append('image', file);
 
-  const response = await fetch(`${API_BASE}/api/admin/upload`, {
+  const response = await fetch(`${API_BASE}/admin/upload`, {
     method: 'POST',
     body: formData,
   });

@@ -9,26 +9,26 @@ export const API_BASE_URL = getApiBaseUrl();
 export const API_ROUTES = {
   // Public APIs
   PUBLIC: {
-    SERVICE_INQUIRY: '/api/services/inquiry',
-    HIRE_REQUEST: '/api/hire/request',
+    SERVICE_INQUIRY: '/services/inquiry',
+    HIRE_REQUEST: '/hire/request',
   },
   // Admin APIs
   ADMIN: {
-    LOGIN: '/api/admin/login',
-    INQUIRIES: '/api/admin/inquiries',
-    INQUIRIES_EXPORT: '/api/admin/inquiries/export/csv',
-    INQUIRIES_BY_ID: (id: string) => `/api/admin/inquiries/${id}`,
-    INQUIRIES_REPLY: (id: string) => `/api/admin/inquiries/${id}/reply`,
-    INQUIRIES_PDF: (id: string) => `/api/admin/inquiries/${id}/pdf`,
-    UPDATE_INQUIRY_STATUS: (id: string) => `/api/admin/inquiry/${id}/status`,
-    HIRE_REQUESTS: '/api/admin/hire-requests',
-    HIRE_REQUESTS_EXPORT: '/api/admin/hire-requests/export/csv',
-    HIRE_REQUESTS_BY_ID: (id: string) => `/api/admin/hire-requests/${id}`,
-    HIRE_REQUESTS_REPLY: (id: string) => `/api/admin/hire-requests/${id}/reply`,
-    HIRE_REQUESTS_PDF: (id: string) => `/api/admin/hire-requests/${id}/pdf`,
-    UPDATE_HIRE_STATUS: (id: string) => `/api/admin/hire-request/${id}/status`,
-    UPLOAD: '/api/admin/upload',
-    STATS: '/api/admin/stats',
+    LOGIN: '/admin/login',
+    INQUIRIES: '/admin/inquiries',
+    INQUIRIES_EXPORT: '/admin/inquiries/export/csv',
+    INQUIRIES_BY_ID: (id: string) => `/admin/inquiries/${id}`,
+    INQUIRIES_REPLY: (id: string) => `/admin/inquiries/${id}/reply`,
+    INQUIRIES_PDF: (id: string) => `/admin/inquiries/${id}/pdf`,
+    UPDATE_INQUIRY_STATUS: (id: string) => `/admin/inquiry/${id}/status`,
+    HIRE_REQUESTS: '/admin/hire-requests',
+    HIRE_REQUESTS_EXPORT: '/admin/hire-requests/export/csv',
+    HIRE_REQUESTS_BY_ID: (id: string) => `/admin/hire-requests/${id}`,
+    HIRE_REQUESTS_REPLY: (id: string) => `/admin/hire-requests/${id}/reply`,
+    HIRE_REQUESTS_PDF: (id: string) => `/admin/hire-requests/${id}/pdf`,
+    UPDATE_HIRE_STATUS: (id: string) => `/admin/hire-request/${id}/status`,
+    UPLOAD: '/admin/upload',
+    STATS: '/admin/stats',
   },
 };
 
