@@ -50,6 +50,17 @@ export const metadata: Metadata = {
   // Mobile app configurations
   manifest: '/manifest.json',
   
+  // Favicon configurations
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
+    ],
+    apple: [
+      { url: '/apple-icon', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  
   // Robots
   robots: {
     index: true,
