@@ -12,12 +12,20 @@ export async function GET(request: NextRequest) {
     
     console.log(`Proxying GET request to: ${BACKEND_URL}${fullPath}`);
     
-    // Forward the request to the backend
+    // Forward the request to the backend with all headers
+    const requestHeaders: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    // Forward Authorization header if present
+    const authHeader = request.headers.get('authorization');
+    if (authHeader) {
+      requestHeaders['Authorization'] = authHeader;
+    }
+
     const backendResponse = await fetch(`${BACKEND_URL}${fullPath}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: requestHeaders,
     });
 
     console.log(`Backend response status: ${backendResponse.status}`);
@@ -61,18 +69,35 @@ export async function POST(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const path = url.pathname.replace('/api/proxy', '');
+    const queryString = url.search;
+    const fullPath = `${path}${queryString}`;
     const body = await request.json();
 
-    const backendResponse = await fetch(`${BACKEND_URL}${path}`, {
+    console.log(`Proxying POST request to: ${BACKEND_URL}${fullPath}`);
+
+    // Forward the request to the backend with all headers
+    const requestHeaders: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    // Forward Authorization header if present
+    const authHeader = request.headers.get('authorization');
+    if (authHeader) {
+      requestHeaders['Authorization'] = authHeader;
+    }
+
+    const backendResponse = await fetch(`${BACKEND_URL}${fullPath}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: requestHeaders,
       body: JSON.stringify(body),
     });
 
+    console.log(`Backend response status: ${backendResponse.status}`);
+
     if (!backendResponse.ok) {
-      throw new Error(`Backend responded with status: ${backendResponse.status}`);
+      const errorText = await backendResponse.text();
+      console.error(`Backend error: ${backendResponse.status} - ${errorText}`);
+      throw new Error(`Backend responded with status: ${backendResponse.status} - ${errorText}`);
     }
 
     const data = await backendResponse.json();
