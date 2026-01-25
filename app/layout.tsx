@@ -48,7 +48,7 @@ export const metadata: Metadata = {
   },
   
   // Mobile app configurations
-  manifest: '/manifest.json',
+  manifest: '/manifest.json?v=2025-01-25',
   
   // Favicon configurations
   icons: {
