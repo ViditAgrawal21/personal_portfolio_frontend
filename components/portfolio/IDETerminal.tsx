@@ -6,9 +6,9 @@ import { useEffect, useState } from 'react';
 
 const logs = [
   '[info] System initialized. Portfolio components loaded successfully.',
-  '[debug] Listening on localhost:3000 (development mode)',
+  '[info] Production server ready on personal-portfolio-frontend-henna.vercel.app',
   '[info] Hydrating \'projects.json\' into UI components... Done.',
-  '> sh coreComponents.dev',
+  '> sh coreComponents.prod',
   'Last login: Wed Oct 23 14:02:11 2024 from 192.168.1.1'
 ];
 

@@ -1,17 +1,7 @@
 // API Configuration
 export const getApiBaseUrl = () => {
-  // Check if we're in production or development
-  if (typeof window !== 'undefined') {
-    // Client-side detection - use proxy in production to avoid CORS
-    return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      ? 'http://localhost:5000'
-      : '/api/proxy'; // Use Next.js API proxy for CORS
-  }
-  
-  // Server-side detection using NODE_ENV or environment variable
-  return process.env.NODE_ENV === 'production' 
-    ? '/api/proxy' // Use Next.js API proxy for CORS
-    : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  // Always use production proxy to avoid CORS
+  return '/api/proxy';
 };
 
 export const API_BASE_URL = getApiBaseUrl();

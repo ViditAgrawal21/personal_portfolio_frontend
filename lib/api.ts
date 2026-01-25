@@ -10,7 +10,7 @@ import type {
 } from '@/types/portfolio';
 import { getApiBaseUrl } from '@/config/api';
 
-// Get API base URL from environment or default to localhost
+// Get API base URL for production
 export const API_BASE = getApiBaseUrl();
 
 // Generic API fetch helper with error handling
