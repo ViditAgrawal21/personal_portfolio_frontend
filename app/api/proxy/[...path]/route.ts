@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const BACKEND_URL = process.env.BACKEND_API_URL || 'https://personal-portfolio-backend-ec6a.onrender.com';
 
 export async function GET(request: NextRequest) {
   try {
@@ -39,7 +39,16 @@ export async function GET(request: NextRequest) {
     if (!backendResponse.ok) {
       const errorText = await backendResponse.text();
       console.error(`❌ Backend error: ${backendResponse.status} - ${errorText}`);
-      throw new Error(`Backend responded with status: ${backendResponse.status} - ${errorText}`);
+      let errorBody: any;
+      try { errorBody = JSON.parse(errorText); } catch { errorBody = { error: errorText }; }
+      return NextResponse.json(errorBody, {
+        status: backendResponse.status,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        },
+      });
     }
 
     const data = await backendResponse.json();
@@ -111,7 +120,16 @@ export async function POST(request: NextRequest) {
     if (!backendResponse.ok) {
       const errorText = await backendResponse.text();
       console.error(`❌ Backend error: ${backendResponse.status} - ${errorText}`);
-      throw new Error(`Backend responded with status: ${backendResponse.status} - ${errorText}`);
+      let errorBody: any;
+      try { errorBody = JSON.parse(errorText); } catch { errorBody = { error: errorText }; }
+      return NextResponse.json(errorBody, {
+        status: backendResponse.status,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        },
+      });
     }
 
     const data = await backendResponse.json();
