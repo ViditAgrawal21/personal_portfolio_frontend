@@ -9,7 +9,7 @@ export default function ResumePage() {
   const handleDownload = () => {
     // Create a temporary link element to trigger download
     const link = document.createElement('a');
-    link.href = '/assests/vidit_resume.pdf';
+    link.href = '/assests/vidit_agrawal_1.pdf';
     link.download = 'Vidit_Agrawal_Resume.pdf';
     document.body.appendChild(link);
     link.click();
