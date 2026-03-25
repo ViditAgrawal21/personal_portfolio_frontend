@@ -52,9 +52,11 @@ export const aboutAPI = {
     method: 'PUT',
     body: JSON.stringify(data),
   }),
-  updateAvailability: (data: { isAvailable: boolean; availabilityStatus?: string; hourlyRate?: string }) =>
-    apiRequest('/admin/availability', {
-      method: 'PATCH',
+  // The backend has no separate availability endpoint — availability fields
+  // are part of the main about document. Merge them into PUT /admin/content/about.
+  updateAvailability: (data: { isAvailable: boolean; availabilityStatus?: string; hourlyRate?: string; [key: string]: any }) =>
+    apiRequest('/admin/content/about', {
+      method: 'PUT',
       body: JSON.stringify(data),
     }),
 };

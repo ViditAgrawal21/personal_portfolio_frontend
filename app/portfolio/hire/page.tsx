@@ -17,16 +17,39 @@ export default function HirePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
+  // Map projectType dropdown values to backend-expected techStack arrays
+  const projectTypeToTechStack: Record<string, string[]> = {
+    'fullstack': ['React', 'Node.js', 'MongoDB'],
+    'architecture': ['System Design', 'Microservices', 'Cloud Architecture'],
+    'consulting': ['Technical Consulting', 'Code Review', 'Best Practices'],
+    'devops': ['Docker', 'CI/CD', 'Kubernetes', 'Cloud'],
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
     try {
+      // Backend POST /api/hire/request expects: projectName, techStack[], email, message
+      const payload = {
+        projectName: formData.company
+          ? `${formData.company} – ${formData.projectType}`
+          : `${formData.projectType} project`,
+        techStack: projectTypeToTechStack[formData.projectType] ?? [formData.projectType],
+        email: formData.email,
+        message: [
+          `From: ${formData.name}`,
+          formData.budget ? `Budget: ${formData.budget}` : '',
+          '',
+          formData.message,
+        ].filter(Boolean).join('\n'),
+      };
+
       const response = await fetch('/api/proxy/hire/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {

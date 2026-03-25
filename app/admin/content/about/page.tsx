@@ -80,7 +80,9 @@ export default function AboutManagementPage() {
     e.preventDefault();
     setSavingAvailability(true);
     try {
-      await aboutAPI.updateAvailability(availabilityData);
+      // Merge all profile fields + availability fields into one PUT call
+      // (the backend has no separate availability endpoint)
+      await aboutAPI.updateAvailability({ ...formData, ...availabilityData });
       alert('Availability updated successfully!');
       await fetchAbout();
     } catch (error) {
