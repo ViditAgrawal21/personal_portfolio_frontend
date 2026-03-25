@@ -52,6 +52,11 @@ export const aboutAPI = {
     method: 'PUT',
     body: JSON.stringify(data),
   }),
+  updateAvailability: (data: { isAvailable: boolean; availabilityStatus?: string; hourlyRate?: string }) =>
+    apiRequest('/admin/availability', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
 };
 
 // SERVICES API

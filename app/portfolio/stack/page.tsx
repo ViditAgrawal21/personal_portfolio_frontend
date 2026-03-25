@@ -112,7 +112,20 @@ export default function StackPage() {
                       >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            {tech.icon && <span>{tech.icon}</span>}
+                            {tech.icon && (
+                              tech.icon.startsWith('http') || tech.icon.startsWith('/') ? (
+                                <img
+                                  src={tech.icon}
+                                  alt={tech.name}
+                                  width={20}
+                                  height={20}
+                                  className="w-5 h-5 object-contain"
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                />
+                              ) : (
+                                <span>{tech.icon}</span>
+                              )
+                            )}
                             <span className="text-white text-sm font-medium">{tech.name}</span>
                           </div>
                           <span className={`text-${color}-400 text-xs font-mono`}>

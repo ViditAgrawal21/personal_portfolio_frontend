@@ -113,6 +113,20 @@ export default function TechStackManagementPage() {
                   <span className={`px-3 py-1 text-xs rounded-full border ${getCategoryColor(tech.category)}`}>
                     {tech.category}
                   </span>
+                  {tech.icon && (
+                    tech.icon.startsWith('http') || tech.icon.startsWith('/') ? (
+                      <img
+                        src={tech.icon}
+                        alt={tech.name}
+                        width={28}
+                        height={28}
+                        className="w-7 h-7 object-contain"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    ) : (
+                      <span className="text-2xl">{tech.icon}</span>
+                    )
+                  )}
                 </div>
                 <h3 className="text-xl font-bold text-white mb-3">{tech.name}</h3>
                 <div className="mb-4">
@@ -280,13 +294,25 @@ function TechModal({
 
           <div>
             <label className="block text-gray-300 text-sm font-medium mb-2">Icon URL (optional)</label>
-            <input
-              type="text"
-              value={formData.icon}
-              onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-              placeholder="https://..."
-              className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-            />
+            <div className="flex items-center gap-3">
+              <input
+                type="text"
+                value={formData.icon}
+                onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                placeholder="https://..."
+                className="flex-1 px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+              />
+              {formData.icon && (formData.icon.startsWith('http') || formData.icon.startsWith('/')) && (
+                <img
+                  src={formData.icon}
+                  alt="icon preview"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 object-contain rounded"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+              )}
+            </div>
           </div>
 
           <div className="flex gap-4 pt-4 border-t border-gray-800">

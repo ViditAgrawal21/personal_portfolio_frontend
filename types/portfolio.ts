@@ -20,7 +20,9 @@ export interface About {
   twitterUrl?: string;
   profileImageUrl?: string;
   yearsOfExp?: number;
-  availableForHire?: boolean;
+  isAvailable?: boolean;
+  availabilityStatus?: string;
+  hourlyRate?: string;
   createdAt: string;
   updatedAt: string;
 }

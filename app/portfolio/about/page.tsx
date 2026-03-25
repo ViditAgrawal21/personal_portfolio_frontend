@@ -112,10 +112,12 @@ export default function AboutPage() {
                 alt={about?.fullName || 'Profile'}
                 className="w-full h-full object-cover"
               />
-              {about?.availableForHire && (
+              {about?.isAvailable && (
                 <div className="absolute bottom-6 left-6 bg-green-500/90 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2">
                   <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-                  <span className="text-white text-sm font-medium">AVAILABLE FOR HIRE</span>
+                  <span className="text-white text-sm font-medium">
+                    {about?.availabilityStatus || 'AVAILABLE FOR HIRE'}
+                  </span>
                 </div>
               )}
             </div>

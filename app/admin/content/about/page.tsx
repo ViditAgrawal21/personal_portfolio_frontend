@@ -9,6 +9,7 @@ export default function AboutManagementPage() {
   const [about, setAbout] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingAvailability, setSavingAvailability] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     title: '',
@@ -19,8 +20,288 @@ export default function AboutManagementPage() {
     githubUrl: '',
     linkedinUrl: '',
     twitterUrl: '',
-    availableForHire: false,
   });
+  const [availabilityData, setAvailabilityData] = useState({
+    isAvailable: false,
+    availabilityStatus: '',
+    hourlyRate: '',
+  });
+
+  useEffect(() => {
+    fetchAbout();
+  }, []);
+
+  const fetchAbout = async () => {
+    try {
+      setLoading(true);
+      const response = await aboutAPI.get();
+      setAbout(response.data);
+      if (response.data) {
+        setFormData({
+          fullName: response.data.fullName || '',
+          title: response.data.title || '',
+          bio: response.data.bio || '',
+          email: response.data.email || '',
+          phone: response.data.phone || '',
+          location: response.data.location || '',
+          githubUrl: response.data.githubUrl || '',
+          linkedinUrl: response.data.linkedinUrl || '',
+          twitterUrl: response.data.twitterUrl || '',
+        });
+        setAvailabilityData({
+          isAvailable: response.data.isAvailable ?? false,
+          availabilityStatus: response.data.availabilityStatus || '',
+          hourlyRate: response.data.hourlyRate || '',
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch about:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await aboutAPI.update(formData);
+      alert('About section updated successfully!');
+      await fetchAbout();
+    } catch (error) {
+      console.error('Failed to save:', error);
+      alert('Failed to save changes');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveAvailability = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingAvailability(true);
+    try {
+      await aboutAPI.updateAvailability(availabilityData);
+      alert('Availability updated successfully!');
+      await fetchAbout();
+    } catch (error) {
+      console.error('Failed to save availability:', error);
+      alert('Failed to save availability');
+    } finally {
+      setSavingAvailability(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen">
+      <AdminHeader 
+        title="About Section" 
+        description="Manage your personal information"
+      />
+
+      <div className="p-8 max-w-4xl mx-auto space-y-8">
+        {/* Profile Info Form */}
+        <form onSubmit={handleSave} className="bg-[#1a1625] border border-gray-800 rounded-lg p-8 space-y-6">
+          <h2 className="text-lg font-semibold text-white">Profile Information</h2>
+
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Full Name</label>
+              <input
+                type="text"
+                value={formData.fullName}
+                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                required
+                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Title/Role</label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                required
+                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-gray-300 text-sm font-medium mb-2">Bio</label>
+            <textarea
+              value={formData.bio}
+              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+              required
+              rows={6}
+              className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Email</label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Phone</label>
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-gray-300 text-sm font-medium mb-2">Location</label>
+            <input
+              type="text"
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+            />
+          </div>
+
+          <div className="grid grid-cols-3 gap-6">
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">GitHub URL</label>
+              <input
+                type="url"
+                value={formData.githubUrl}
+                onChange={(e) => setFormData({ ...formData, githubUrl: e.target.value })}
+                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">LinkedIn URL</label>
+              <input
+                type="url"
+                value={formData.linkedinUrl}
+                onChange={(e) => setFormData({ ...formData, linkedinUrl: e.target.value })}
+                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Twitter URL</label>
+              <input
+                type="url"
+                value={formData.twitterUrl}
+                onChange={(e) => setFormData({ ...formData, twitterUrl: e.target.value })}
+                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-4 border-t border-gray-800">
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save Profile'}
+            </button>
+          </div>
+        </form>
+
+        {/* Availability Settings Card */}
+        <form onSubmit={handleSaveAvailability} className="bg-[#1a1625] border border-gray-800 rounded-lg p-8 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-white">Availability Status</h2>
+              <p className="text-sm text-gray-500 mt-1">Controls the hiring badge on your public profile</p>
+            </div>
+            <div className={`px-3 py-1 rounded-full text-xs font-medium border ${
+              availabilityData.isAvailable
+                ? 'bg-green-500/10 text-green-400 border-green-500/30'
+                : 'bg-gray-700/50 text-gray-500 border-gray-700'
+            }`}>
+              {availabilityData.isAvailable ? 'Available' : 'Unavailable'}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <label className="text-gray-300 text-sm font-medium">Available for Hire</label>
+            <button
+              type="button"
+              onClick={() => setAvailabilityData({ ...availabilityData, isAvailable: !availabilityData.isAvailable })}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                availabilityData.isAvailable ? 'bg-green-500' : 'bg-gray-700'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  availabilityData.isAvailable ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+            <span className={`text-sm font-medium ${
+              availabilityData.isAvailable ? 'text-green-400' : 'text-gray-500'
+            }`}>
+              {availabilityData.isAvailable ? 'Open to opportunities' : 'Not available'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Status Message</label>
+              <input
+                type="text"
+                value={availabilityData.availabilityStatus}
+                onChange={(e) => setAvailabilityData({ ...availabilityData, availabilityStatus: e.target.value })}
+                placeholder="e.g., Available for projects, Booking for Q2 2026"
+                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500 placeholder-gray-600"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Hourly Rate</label>
+              <input
+                type="text"
+                value={availabilityData.hourlyRate}
+                onChange={(e) => setAvailabilityData({ ...availabilityData, hourlyRate: e.target.value })}
+                placeholder="e.g., $25-50/hour"
+                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500 placeholder-gray-600"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-4 border-t border-gray-800">
+            <button
+              type="submit"
+              disabled={savingAvailability}
+              className="px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors disabled:opacity-50"
+            >
+              {savingAvailability ? 'Saving...' : 'Save Availability'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 
   useEffect(() => {
     fetchAbout();
