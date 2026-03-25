@@ -95,7 +95,7 @@ export default function StackPage() {
             {Object.entries(groupedTech).map(([category, techs], categoryIdx) => {
               const color = getCategoryColor(category);
               const emoji = getCategoryEmoji(category);
-              
+
               return (
                 <div key={category}>
                   <h3 className={`text-${color}-400 text-sm font-semibold mb-4 flex items-center gap-2`}>
@@ -166,10 +166,14 @@ export default function StackPage() {
             <h2 className="text-2xl font-bold text-white mb-4">Technical Philosophy</h2>
             <div className="text-gray-400 leading-relaxed space-y-3">
               <p>
-                I build for the long term. My approach combines the strict type-safety of{' '}
-                <span className="text-orange-400 font-semibold">Rust</span> with the rapid iteration capabilities of{' '}
-                <span className="text-blue-400 font-semibold">Next.js</span>. I believe in high-performance, resilient systems that can scale without technical debt.
+                I build for the long term. My approach combines{' '}
+                <span className="text-orange-400 font-semibold">precision engineering</span> with{' '}
+                <span className="text-blue-400 font-semibold">fast iteration cycles</span>. I believe in crafting{' '}
+                <span className="text-green-400 font-semibold">high-performance</span>,{' '}
+                <span className="text-purple-400 font-semibold">fault-tolerant systems</span> that scale effortlessly without hidden{' '}
+                <span className="text-red-400 font-semibold">complexity</span>.
               </p>
+
               <div className="flex items-center gap-2 mt-4">
                 <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center text-2xl">
                   ⚡

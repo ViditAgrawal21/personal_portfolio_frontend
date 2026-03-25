@@ -3,10 +3,6 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useProjects } from '@/hooks/usePortfolio';
-import { useMergedProjects } from '@/hooks/useGitHub';
-
-// GitHub username - set this to fetch repos directly from GitHub
-const GITHUB_USERNAME = 'ViditAgrawal21'; // Change to your GitHub username or set to undefined to disable
 
 // Project image mapping - maps project titles/keywords to image filenames
 const getProjectImage = (title: string, projectImage?: string): string | undefined => {
@@ -81,8 +77,8 @@ export default function ProjectsPage() {
   const [filter, setFilter] = useState('all');
   const { projects: backendProjects, loading, error } = useProjects();
   
-  // Merge backend projects with GitHub repos (if username is set)
-  const allProjects = useMergedProjects(backendProjects, GITHUB_USERNAME);
+  // Use only curated backend projects (no GitHub repo mixing)
+  const allProjects = backendProjects;
   
   const filteredProjects = filter === 'all' 
     ? allProjects 
