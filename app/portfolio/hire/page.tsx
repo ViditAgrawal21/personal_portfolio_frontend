@@ -2,8 +2,10 @@
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { useAbout } from '@/hooks/usePortfolio';
 
 export default function HirePage() {
+  const { about } = useAbout();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -13,16 +15,31 @@ export default function HirePage() {
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    alert('Interview request sent successfully!');
-    setIsSubmitting(false);
+    setSubmitStatus('idle');
+
+    try {
+      const response = await fetch('/api/proxy/hire/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        setSubmitStatus('success');
+        setFormData({ name: '', email: '', company: '', projectType: 'fullstack', budget: '', message: '' });
+      } else {
+        setSubmitStatus('error');
+      }
+    } catch {
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -51,6 +68,18 @@ export default function HirePage() {
           {/* Form Card */}
           <div className="bg-[#1a1a1a] border border-gray-800 rounded-lg p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
+              {submitStatus === 'success' && (
+                <div className="bg-green-600/20 border border-green-600/50 rounded-lg p-4 text-green-400 text-sm font-semibold">
+                  ✓ Interview request submitted! I'll get back to you within 24-48 hours.
+                </div>
+              )}
+
+              {submitStatus === 'error' && (
+                <div className="bg-red-600/20 border border-red-600/50 rounded-lg p-4 text-red-400 text-sm font-semibold">
+                  Submission failed. Please try again or reach out directly.
+                </div>
+              )}
+
               {/* Name and Email */}
               <div className="grid grid-cols-2 gap-6">
                 <div>
@@ -178,11 +207,14 @@ export default function HirePage() {
               className="bg-[#1a1a1a] border border-gray-800 rounded-lg p-6"
             >
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-                <h3 className="text-lg font-semibold text-white">Available for Hire</h3>
+                <div className={`w-3 h-3 ${about?.isAvailable ? 'bg-green-500' : 'bg-red-500'} rounded-full animate-pulse`} />
+                <h3 className="text-lg font-semibold text-white">
+                  {about?.isAvailable ? 'Available for Hire' : 'Currently Unavailable'}
+                </h3>
               </div>
               <p className="text-sm text-gray-400 leading-relaxed">
-                Currently accepting projects starting Q1 2026. Response time: 24-48 hours.
+                {about?.availabilityStatus || 'Contact for availability details.'}
+                {about?.hourlyRate && <span className="block mt-1 text-purple-400">Rate: {about.hourlyRate}/hr</span>}
               </p>
             </motion.div>
 

@@ -4,18 +4,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useServices } from '@/hooks/usePortfolio';
 
-const categories = [
-  { id: 'all', name: 'All Extensions', icon: '🔌' },
-  { id: 'infrastructure', name: 'Infrastructure', icon: '☁️' },
-  { id: 'frontend', name: 'Frontend Ops', icon: '💻' },
-  { id: 'design', name: 'Design Systems', icon: '🎨' },
-  { id: 'security', name: 'Security Audits', icon: '🔒' },
-];
-
-const statusFilters = [
-  { id: 'available', name: 'Available for Hire', color: 'text-green-400' },
-  { id: 'maintenance', name: 'In Maintenance', color: 'text-orange-400' },
-];
+const CATEGORY_ICONS: Record<string, string> = {
+  'infrastructure': '☁️',
+  'frontend': '💻',
+  'design': '🎨',
+  'security': '🔒',
+  'backend': '⚙️',
+  'mobile': '📱',
+  'ai/ml': '🤖',
+  'devops': '🛠️',
+};
 
 export default function ServicesPage() {
   const { services, loading, error } = useServices();
@@ -34,6 +32,16 @@ export default function ServicesPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  // Derive categories dynamically from loaded services
+  const dynamicCategories = [
+    { id: 'all', name: 'All Services', icon: '🔌' },
+    ...Array.from(new Set(services.map((s) => s.category).filter(Boolean))).map((cat) => ({
+      id: cat as string,
+      name: (cat as string).charAt(0).toUpperCase() + (cat as string).slice(1),
+      icon: CATEGORY_ICONS[(cat as string).toLowerCase()] || '🔌',
+    })),
+  ];
 
   if (loading) {
     return (
@@ -98,7 +106,7 @@ export default function ServicesPage() {
         },
         body: JSON.stringify({
           ...formData,
-          serviceId: selectedService?.id,
+          serviceId: selectedService?._id,
           serviceName: selectedService?.name,
           serviceCategory: selectedService?.category,
           timestamp: new Date().toISOString()
@@ -154,7 +162,7 @@ export default function ServicesPage() {
           className="mb-8"
         >
           <div className="flex items-center gap-3 flex-wrap">
-            {categories.map(cat => (
+            {dynamicCategories.map(cat => (
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}

@@ -156,32 +156,7 @@ export default function StackPage() {
             })}
           </div>
 
-          {/* Technical Philosophy */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="bg-gradient-to-br from-purple-900/20 to-transparent border border-gray-800 rounded-lg p-6"
-          >
-            <h2 className="text-2xl font-bold text-white mb-4">Technical Philosophy</h2>
-            <div className="text-gray-400 leading-relaxed space-y-3">
-              <p>
-                I build for the long term. My approach combines{' '}
-                <span className="text-orange-400 font-semibold">precision engineering</span> with{' '}
-                <span className="text-blue-400 font-semibold">fast iteration cycles</span>. I believe in crafting{' '}
-                <span className="text-green-400 font-semibold">high-performance</span>,{' '}
-                <span className="text-purple-400 font-semibold">fault-tolerant systems</span> that scale effortlessly without hidden{' '}
-                <span className="text-red-400 font-semibold">complexity</span>.
-              </p>
 
-              <div className="flex items-center gap-2 mt-4">
-                <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center text-2xl">
-                  ⚡
-                </div>
-                <span className="text-sm text-gray-500">Performance-first architecture</span>
-              </div>
-            </div>
-          </motion.div>
         </motion.div>
       </div>
     </div>
