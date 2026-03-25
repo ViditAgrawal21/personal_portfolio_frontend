@@ -37,6 +37,10 @@ export const API_ENDPOINTS = {
   // Authentication
   login: `${API_BASE_URL}${API_ROUTES.ADMIN.LOGIN}`,
   
+  // Public APIs
+  serviceInquiry: `${API_BASE_URL}${API_ROUTES.PUBLIC.SERVICE_INQUIRY}`,
+  hireRequest: `${API_BASE_URL}${API_ROUTES.PUBLIC.HIRE_REQUEST}`,
+  
   // Hire Requests
   hireRequests: `${API_BASE_URL}${API_ROUTES.ADMIN.HIRE_REQUESTS}`,
   hireRequestReply: (id: string) => `${API_BASE_URL}${API_ROUTES.ADMIN.HIRE_REQUESTS_REPLY(id)}`,
