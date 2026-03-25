@@ -3,9 +3,12 @@ export interface ServiceInquiry {
   id: string;
   clientName: string;
   email: string;
-  serviceType: string;
+  serviceType?: string;
+  companyName?: string;
+  phoneNumber?: string;
   budgetRange?: string;
-  requirements: string;
+  timeline?: string;
+  projectDetails: string;
   status: InquiryStatus;
   internalNotes?: string;
   createdAt: string;
@@ -14,9 +17,12 @@ export interface ServiceInquiry {
 
 export interface HireRequest {
   id: string;
-  projectName: string;
-  techStack: string[];
+  candidateName: string;
   email: string;
+  companyName: string;
+  roleType: string;
+  salaryOffer?: string;
+  location?: string;
   message: string;
   status: HireStatus;
   internalNotes?: string;
@@ -68,14 +74,20 @@ export interface ServiceInquiryFormData {
   clientName: string;
   email: string;
   serviceType: string;
+  companyName?: string;
+  phoneNumber?: string;
   budgetRange?: string;
-  requirements: string;
+  timeline?: string;
+  projectDetails: string;
 }
 
 export interface HireRequestFormData {
-  projectName: string;
-  techStack: string[];
+  candidateName: string;
   email: string;
+  companyName: string;
+  roleType: string;
+  salaryOffer?: string;
+  location?: string;
   message: string;
 }
 

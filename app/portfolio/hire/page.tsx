@@ -7,23 +7,16 @@ import { useAbout } from '@/hooks/usePortfolio';
 export default function HirePage() {
   const { about } = useAbout();
   const [formData, setFormData] = useState({
-    name: '',
+    candidateName: '',
     email: '',
-    company: '',
-    projectType: 'fullstack',
-    budget: '',
+    companyName: '',
+    roleType: 'Full-Stack Developer',
+    salaryOffer: '',
+    location: '',
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-
-  // Map projectType dropdown values to backend-expected techStack arrays
-  const projectTypeToTechStack: Record<string, string[]> = {
-    'fullstack': ['React', 'Node.js', 'MongoDB'],
-    'architecture': ['System Design', 'Microservices', 'Cloud Architecture'],
-    'consulting': ['Technical Consulting', 'Code Review', 'Best Practices'],
-    'devops': ['Docker', 'CI/CD', 'Kubernetes', 'Cloud'],
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,30 +24,15 @@ export default function HirePage() {
     setSubmitStatus('idle');
 
     try {
-      // Backend POST /api/hire/request expects: projectName, techStack[], email, message
-      const payload = {
-        projectName: formData.company
-          ? `${formData.company} – ${formData.projectType}`
-          : `${formData.projectType} project`,
-        techStack: projectTypeToTechStack[formData.projectType] ?? [formData.projectType],
-        email: formData.email,
-        message: [
-          `From: ${formData.name}`,
-          formData.budget ? `Budget: ${formData.budget}` : '',
-          '',
-          formData.message,
-        ].filter(Boolean).join('\n'),
-      };
-
       const response = await fetch('/api/proxy/hire/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
         setSubmitStatus('success');
-        setFormData({ name: '', email: '', company: '', projectType: 'fullstack', budget: '', message: '' });
+        setFormData({ candidateName: '', email: '', companyName: '', roleType: 'Full-Stack Developer', salaryOffer: '', location: '', message: '' });
       } else {
         setSubmitStatus('error');
       }
@@ -107,13 +85,15 @@ export default function HirePage() {
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm text-gray-400 mb-2">
-                    name <span className="text-pink-400">*</span>
+                    candidateName <span className="text-pink-400">*</span>
                   </label>
                   <input
                     type="text"
                     required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    minLength={2}
+                    maxLength={255}
+                    value={formData.candidateName}
+                    onChange={(e) => setFormData({ ...formData, candidateName: e.target.value })}
                     className="w-full px-4 py-3 bg-[#0a0a0a] border border-gray-700 rounded text-gray-300 focus:outline-none focus:border-pink-500 transition-colors"
                     placeholder="Your full name"
                   />
@@ -136,46 +116,74 @@ export default function HirePage() {
               {/* Company name */}
               <div>
                 <label className="block text-sm text-gray-400 mb-2">
-                  Company name
+                  companyName <span className="text-pink-400">*</span>
                 </label>
                 <input
                   type="text"
-                  value={formData.company}
-                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                  required
+                  minLength={2}
+                  maxLength={255}
+                  value={formData.companyName}
+                  onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                   className="w-full px-4 py-3 bg-[#0a0a0a] border border-gray-700 rounded text-gray-300 focus:outline-none focus:border-pink-500 transition-colors"
                   placeholder="Company name"
                 />
               </div>
 
-              {/* Project Type */}
+              {/* Role Type */}
               <div>
                 <label className="block text-sm text-gray-400 mb-2">
-                  projectType <span className="text-pink-400">*</span>
+                  roleType <span className="text-pink-400">*</span>
                 </label>
                 <select
                   required
-                  value={formData.projectType}
-                  onChange={(e) => setFormData({ ...formData, projectType: e.target.value })}
+                  value={formData.roleType}
+                  onChange={(e) => setFormData({ ...formData, roleType: e.target.value })}
                   className="w-full px-4 py-3 bg-[#0a0a0a] border border-gray-700 rounded text-gray-300 focus:outline-none focus:border-pink-500 transition-colors"
                 >
-                  <option value="fullstack">Full-Stack Development</option>
-                  <option value="architecture">System Architecture</option>
-                  <option value="consulting">Technical Consulting</option>
-                  <option value="devops">DevOps & CI/CD</option>
+                  <option value="Frontend Developer">Frontend Developer</option>
+                  <option value="Backend Developer">Backend Developer</option>
+                  <option value="Full-Stack Developer">Full-Stack Developer</option>
+                  <option value="React Developer">React Developer</option>
+                  <option value="Node.js Developer">Node.js Developer</option>
+                  <option value="Python Developer">Python Developer</option>
+                  <option value="JavaScript Developer">JavaScript Developer</option>
+                  <option value="Software Engineer">Software Engineer</option>
+                  <option value="Web Developer">Web Developer</option>
+                  <option value="API Developer">API Developer</option>
+                  <option value="DevOps Engineer">DevOps Engineer</option>
+                  <option value="Technical Consultant">Technical Consultant</option>
+                  <option value="Custom Role">Custom Role</option>
                 </select>
               </div>
 
-              {/* Budget */}
+              {/* Salary Offer */}
               <div>
                 <label className="block text-sm text-gray-400 mb-2">
-                  budget
+                  salaryOffer
                 </label>
                 <input
                   type="text"
-                  value={formData.budget}
-                  onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+                  maxLength={255}
+                  value={formData.salaryOffer}
+                  onChange={(e) => setFormData({ ...formData, salaryOffer: e.target.value })}
                   className="w-full px-4 py-3 bg-[#0a0a0a] border border-gray-700 rounded text-gray-300 focus:outline-none focus:border-pink-500 transition-colors"
-                  placeholder="$10,000 - $50,000"
+                  placeholder="$120,000 - $140,000 annually"
+                />
+              </div>
+
+              {/* Work Location */}
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">
+                  location
+                </label>
+                <input
+                  type="text"
+                  maxLength={255}
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  className="w-full px-4 py-3 bg-[#0a0a0a] border border-gray-700 rounded text-gray-300 focus:outline-none focus:border-pink-500 transition-colors"
+                  placeholder="e.g., Remote, New York NY, Hybrid"
                 />
               </div>
 
@@ -186,6 +194,8 @@ export default function HirePage() {
                 </label>
                 <textarea
                   required
+                  minLength={10}
+                  maxLength={5000}
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   rows={6}

@@ -10,12 +10,13 @@ export default function ServicesPage() {
   const [showInquiryForm, setShowInquiryForm] = useState(false);
   const [selectedService, setSelectedService] = useState<any | null>(null);
   const [formData, setFormData] = useState({
-    name: '',
+    clientName: '',
     email: '',
-    company: '',
-    phone: '',
-    message: '',
-    budget: '',
+    serviceType: '',
+    companyName: '',
+    phoneNumber: '',
+    projectDetails: '',
+    budgetRange: '',
     timeline: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,18 +52,21 @@ export default function ServicesPage() {
     setSelectedService(service);
     setShowInquiryForm(true);
     setSubmitStatus('idle');
+    // Pre-fill serviceType from the clicked service title
+    setFormData(prev => ({ ...prev, serviceType: service.title || '' }));
   };
 
   const handleCloseForm = () => {
     setShowInquiryForm(false);
     setSelectedService(null);
     setFormData({
-      name: '',
+      clientName: '',
       email: '',
-      company: '',
-      phone: '',
-      message: '',
-      budget: '',
+      serviceType: '',
+      companyName: '',
+      phoneNumber: '',
+      projectDetails: '',
+      budgetRange: '',
       timeline: ''
     });
     setSubmitStatus('idle');
@@ -74,17 +78,12 @@ export default function ServicesPage() {
 
     try {
       // API call to submit service inquiry
-      const response = await fetch('/api/service-inquiry', {
+      const response = await fetch('/api/proxy/services/inquiry', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          serviceId: selectedService?.id,
-          serviceName: selectedService?.title,
-          timestamp: new Date().toISOString()
-        }),
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
@@ -273,8 +272,10 @@ export default function ServicesPage() {
                       <input
                         type="text"
                         required
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        minLength={2}
+                        maxLength={255}
+                        value={formData.clientName}
+                        onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
                         className="w-full px-4 py-2 bg-[#0a0a0a] border border-gray-700 rounded text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none transition-colors"
                         placeholder="John Doe"
                       />
@@ -294,6 +295,29 @@ export default function ServicesPage() {
                     </div>
                   </div>
 
+                  {/* Service Type */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                      Service Type <span className="text-pink-500">*</span>
+                    </label>
+                    <select
+                      required
+                      value={formData.serviceType}
+                      onChange={(e) => setFormData({ ...formData, serviceType: e.target.value })}
+                      className="w-full px-4 py-2 bg-[#0a0a0a] border border-gray-700 rounded text-white focus:border-purple-500 focus:outline-none transition-colors"
+                    >
+                      <option value="">Select service type...</option>
+                      <option value="Web Development">Web Development</option>
+                      <option value="Mobile App Development">Mobile App Development</option>
+                      <option value="E-commerce Development">E-commerce Development</option>
+                      <option value="API Development">API Development</option>
+                      <option value="Database Design">Database Design</option>
+                      <option value="UI/UX Design">UI/UX Design</option>
+                      <option value="Technical Consulting">Technical Consulting</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-300 mb-2">
@@ -301,8 +325,9 @@ export default function ServicesPage() {
                       </label>
                       <input
                         type="text"
-                        value={formData.company}
-                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                        maxLength={255}
+                        value={formData.companyName}
+                        onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                         className="w-full px-4 py-2 bg-[#0a0a0a] border border-gray-700 rounded text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none transition-colors"
                         placeholder="Your Company"
                       />
@@ -313,8 +338,9 @@ export default function ServicesPage() {
                       </label>
                       <input
                         type="tel"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        maxLength={50}
+                        value={formData.phoneNumber}
+                        onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                         className="w-full px-4 py-2 bg-[#0a0a0a] border border-gray-700 rounded text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none transition-colors"
                         placeholder="+1 (555) 000-0000"
                       />
@@ -327,16 +353,18 @@ export default function ServicesPage() {
                         Budget Range
                       </label>
                       <select
-                        value={formData.budget}
-                        onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+                        value={formData.budgetRange}
+                        onChange={(e) => setFormData({ ...formData, budgetRange: e.target.value })}
                         className="w-full px-4 py-2 bg-[#0a0a0a] border border-gray-700 rounded text-white focus:border-purple-500 focus:outline-none transition-colors"
                       >
                         <option value="">Select budget</option>
-                        <option value="<5k">Less than $5,000</option>
-                        <option value="5k-10k">$5,000 - $10,000</option>
-                        <option value="10k-25k">$10,000 - $25,000</option>
-                        <option value="25k-50k">$25,000 - $50,000</option>
-                        <option value="50k+">$50,000+</option>
+                        <option value="Under $1,000">Under $1,000</option>
+                        <option value="$1,000 - $5,000">$1,000 - $5,000</option>
+                        <option value="$5,000 - $10,000">$5,000 - $10,000</option>
+                        <option value="$10,000 - $25,000">$10,000 - $25,000</option>
+                        <option value="$25,000 - $50,000">$25,000 - $50,000</option>
+                        <option value="Over $50,000">Over $50,000</option>
+                        <option value="Custom Amount">Custom Amount</option>
                       </select>
                     </div>
                     <div>
@@ -349,11 +377,13 @@ export default function ServicesPage() {
                         className="w-full px-4 py-2 bg-[#0a0a0a] border border-gray-700 rounded text-white focus:border-purple-500 focus:outline-none transition-colors"
                       >
                         <option value="">Select timeline</option>
-                        <option value="urgent">Urgent (1-2 weeks)</option>
-                        <option value="short">Short term (1 month)</option>
-                        <option value="medium">Medium term (2-3 months)</option>
-                        <option value="long">Long term (3+ months)</option>
-                        <option value="flexible">Flexible</option>
+                        <option value="ASAP (Rush)">ASAP (Rush)</option>
+                        <option value="1-2 weeks">1-2 weeks</option>
+                        <option value="1 month">1 month</option>
+                        <option value="2-3 months">2-3 months</option>
+                        <option value="3-6 months">3-6 months</option>
+                        <option value="6+ months">6+ months</option>
+                        <option value="Flexible">Flexible</option>
                       </select>
                     </div>
                   </div>
@@ -364,8 +394,10 @@ export default function ServicesPage() {
                     </label>
                     <textarea
                       required
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      minLength={10}
+                      maxLength={5000}
+                      value={formData.projectDetails}
+                      onChange={(e) => setFormData({ ...formData, projectDetails: e.target.value })}
                       rows={5}
                       className="w-full px-4 py-2 bg-[#0a0a0a] border border-gray-700 rounded text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none transition-colors resize-none"
                       placeholder="Describe your project requirements, goals, and any specific needs..."
