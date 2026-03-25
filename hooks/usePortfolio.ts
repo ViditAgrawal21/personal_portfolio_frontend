@@ -14,7 +14,9 @@ import {
 
 // Cache duration in milliseconds (5 minutes)
 const CACHE_DURATION = 5 * 60 * 1000;
-const CACHE_KEY = 'portfolio_cache';
+// Bump this version whenever API field shapes change — old cache is auto-dropped
+const CACHE_VERSION = 'v3';
+const CACHE_KEY = `portfolio_cache_${CACHE_VERSION}`;
 
 interface CacheData {
   data: PortfolioContent;
@@ -224,9 +226,11 @@ export function useAbout() {
   return { about, loading, error };
 }
 
-// Clear cache utility
+// Clear cache utility — purges current version key + any old version keys
 export function clearPortfolioCache() {
   if (typeof window !== 'undefined') {
-    localStorage.removeItem(CACHE_KEY);
+    Object.keys(localStorage)
+      .filter(k => k.startsWith('portfolio_cache'))
+      .forEach(k => localStorage.removeItem(k));
   }
 }

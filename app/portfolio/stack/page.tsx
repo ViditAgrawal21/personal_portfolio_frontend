@@ -4,6 +4,29 @@ import { motion } from 'framer-motion';
 import { useTechStack } from '@/hooks/usePortfolio';
 import { groupTechByCategory } from '@/lib/api';
 
+// If the name field from the backend accidentally contains a URL,
+// extract a human-readable label from the filename/path segment.
+const sanitizeName = (name: string): string => {
+  if (!name) return 'Unknown';
+  if (!/^https?:\/\//.test(name)) return name;
+  try {
+    const url = new URL(name);
+    // grab last path segment, strip extension
+    const segment = url.pathname.split('/').filter(Boolean).pop() || '';
+    const base = segment.replace(/\.[^/.]+$/, ''); // remove extension
+    // convert camelCase / hyphens / underscores to spaced words
+    return base
+      .replace(/[-_]/g, ' ')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .split(' ')
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(' ')
+      .trim() || 'Unknown';
+  } catch {
+    return 'Unknown';
+  }
+};
+
 // Helper to get emoji for category
 const getCategoryEmoji = (category: string) => {
   const emojis: Record<string, string> = {
@@ -128,7 +151,7 @@ export default function StackPage() {
                                 <span>{icon}</span>
                               );
                             })()}
-                            <span className="text-white text-sm font-medium">{tech.name}</span>
+                            <span className="text-white text-sm font-medium">{sanitizeName(tech.name)}</span>
                           </div>
                           <span className={`text-${color}-400 text-xs font-mono`}>
                             {tech.proficiency}%
