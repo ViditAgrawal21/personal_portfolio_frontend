@@ -53,7 +53,7 @@ export default function TechStackManagementPage() {
   const handleSave = async (data: any) => {
     try {
       if (editingTech) {
-        await techStackAPI.update(editingTech._id, data);
+        await techStackAPI.update(editingTech.id, data);
       } else {
         await techStackAPI.create(data);
       }
@@ -104,7 +104,7 @@ export default function TechStackManagementPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {techStack.map((tech) => (
               <motion.div
-                key={tech._id}
+                key={tech.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-[#1a1625] border border-gray-800 rounded-lg p-6 hover:border-purple-600/50 transition-all"
@@ -149,7 +149,7 @@ export default function TechStackManagementPage() {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(tech._id)}
+                    onClick={() => handleDelete(tech.id)}
                     className="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded transition-colors text-sm"
                   >
                     Delete

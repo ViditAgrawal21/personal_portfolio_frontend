@@ -14,8 +14,8 @@ const FeaturedProjectsSection = () => {
         const data = await response.json();
         
         if (data.success) {
-          // Filter only featured projects (field name is `featured`, not `isFeatured`)
-          const featured = data.data.filter(project => project.featured);
+          // Filter only featured projects (actual API field is `isFeatured`)
+          const featured = data.data.filter(project => project.isFeatured);
           setFeaturedProjects(featured.slice(0, 3)); // Show top 3
         }
       } catch (error) {
@@ -35,16 +35,16 @@ const FeaturedProjectsSection = () => {
       <h3>Featured Projects</h3>
       <div className="featured-grid">
         {featuredProjects.map(project => (
-          <div key={project._id} className="featured-card">
+          <div key={project.id} className="featured-card">
             <div className="project-badge">⭐ Featured</div>
             <h4>{project.title}</h4>
             <p>{project.description}</p>
             <div className="project-tech">
-              {Array.isArray(project.technologies)
-                ? project.technologies.map(tech => (
+              {Array.isArray(project.techStack)
+                ? project.techStack.map(tech => (
                     <span key={tech} className="tech-pill">{tech}</span>
                   ))
-                : <span className="tech-pill">{project.technologies}</span>
+                : <span className="tech-pill">{project.techStack}</span>
               }
             </div>
             <div className="project-links">
@@ -53,8 +53,8 @@ const FeaturedProjectsSection = () => {
                   GitHub
                 </a>
               )}
-              {project.liveUrl && (
-                <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+              {project.demoUrl && (
+                <a href={project.demoUrl} target="_blank" rel="noopener noreferrer">
                   Live Demo
                 </a>
               )}

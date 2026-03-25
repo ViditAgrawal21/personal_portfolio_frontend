@@ -1,62 +1,65 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const slides = [
-  {
-    id: 1,
-    title: '01. STORY',
-    hero: {
-      line1: 'Bridging the gap',
-      line2: 'between ',
-      logic: 'logic',
-      and: ' and',
-      aesthetics: 'aesthetics',
-      period: '.'
-    },
-    content: {
-      left: 'With over 1.5 years in the industry, I specialize in building high-performance web applications that don\'t just work—they perform. My philosophy is rooted in brutalist minimalism: removing the noise to let the core functionality shine.',
-      right: 'Currently leading engineering teams to deploy scalable cloud architectures and interactive front-end experiences. I believe code is a medium for storytelling in the obsidian void.'
-    }
-  },
-  {
-    id: 2,
-    title: '02. PHILOSOPHY',
-    hero: {
-      line1: 'Code is poetry,',
-      line2: 'design is ',
-      logic: 'emotion',
-      and: '',
-      aesthetics: 'captured',
-      period: '.'
-    },
-    content: {
-      left: 'Each line of code must have a specific function. I design systems that emphasize performance, maintainability, and user experience. My methodology integrates rigorous type-safety with the ability for swift iterations.',
-      right: 'From microservices to monolithic architectures, I\'ve developed systems that can scale from zero to a multitude of users. The essential factor is comprehending trade-offs and making deliberate choices at every level of the stack.'
-    }
-  },
-  {
-    id: 3,
-    title: '03. APPROACH',
-    hero: {
-      line1: 'Building systems',
-      line2: 'that ',
-      logic: 'scale',
-      and: ' and',
-      aesthetics: 'inspire',
-      period: '.'
-    },
-    content: {
-      left: 'Modern web development/application devlopment requires balancing multiple concerns: performance, accessibility, maintainability, and user experience. I leverage cutting-edge tools like Rust and Next.js to deliver production-grade applications.',
-      right: 'My technical philosophy emphasizes developer experience as much as user experience. Clean code, comprehensive testing, and thorough documentation are not optional—they\'re essential.'
-    }
-  }
-];
+import { useAbout } from '@/hooks/usePortfolio';
 
 export default function IntroPage() {
   const router = useRouter();
+  const { about } = useAbout();
+
+  const slides = useMemo(() => [
+    {
+      id: 1,
+      title: '01. STORY',
+      hero: {
+        line1: 'Bridging the gap',
+        line2: 'between ',
+        logic: 'logic',
+        and: ' and',
+        aesthetics: 'aesthetics',
+        period: '.'
+      },
+      content: {
+        left: `With over ${about?.yearsOfExp ?? 1.5}+ years in the industry, I specialize in building high-performance web applications that don't just work—they perform. My philosophy is rooted in brutalist minimalism: removing the noise to let the core functionality shine.`,
+        right: 'Currently leading engineering teams to deploy scalable cloud architectures and interactive front-end experiences. I believe code is a medium for storytelling in the obsidian void.'
+      }
+    },
+    {
+      id: 2,
+      title: '02. PHILOSOPHY',
+      hero: {
+        line1: 'Code is poetry,',
+        line2: 'design is ',
+        logic: 'emotion',
+        and: '',
+        aesthetics: 'captured',
+        period: '.'
+      },
+      content: {
+        left: 'Each line of code must have a specific function. I design systems that emphasize performance, maintainability, and user experience. My methodology integrates rigorous type-safety with the ability for swift iterations.',
+        right: "From microservices to monolithic architectures, I've developed systems that can scale from zero to a multitude of users. The essential factor is comprehending trade-offs and making deliberate choices at every level of the stack."
+      }
+    },
+    {
+      id: 3,
+      title: '03. APPROACH',
+      hero: {
+        line1: 'Building systems',
+        line2: 'that ',
+        logic: 'scale',
+        and: ' and',
+        aesthetics: 'inspire',
+        period: '.'
+      },
+      content: {
+        left: 'Modern web development/application devlopment requires balancing multiple concerns: performance, accessibility, maintainability, and user experience. I leverage cutting-edge tools like Rust and Next.js to deliver production-grade applications.',
+        right: "My technical philosophy emphasizes developer experience as much as user experience. Clean code, comprehensive testing, and thorough documentation are not optional—they're essential."
+      }
+    }
+  ], [about?.yearsOfExp]);
+
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -117,7 +120,7 @@ export default function IntroPage() {
 
       {/* Progress indicator */}
       <div className="fixed top-6 right-8 z-50 font-mono text-gray-500 text-sm">
-        {currentSlide + 1}/5
+        {currentSlide + 1}/{slides.length}
       </div>
 
       {/* Left sidebar icons */}
@@ -147,7 +150,7 @@ export default function IntroPage() {
       {/* Vertical text */}
       <div className="fixed left-4 top-1/2 -translate-y-1/2 z-40">
         <div className="text-gray-600 text-xs tracking-widest" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
-          DEBABRATA MITTER - 2024
+          {about?.fullName?.toUpperCase() || 'PORTFOLIO'} - {new Date().getFullYear()}
         </div>
       </div>
 

@@ -4,20 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useServices } from '@/hooks/usePortfolio';
 
-const CATEGORY_ICONS: Record<string, string> = {
-  'infrastructure': '☁️',
-  'frontend': '💻',
-  'design': '🎨',
-  'security': '🔒',
-  'backend': '⚙️',
-  'mobile': '📱',
-  'ai/ml': '🤖',
-  'devops': '🛠️',
-};
-
 export default function ServicesPage() {
   const { services, loading, error } = useServices();
-  const [selectedCategory, setSelectedCategory] = useState('all');
   const [installedServices, setInstalledServices] = useState<string[]>([]);
   const [showInquiryForm, setShowInquiryForm] = useState(false);
   const [selectedService, setSelectedService] = useState<any | null>(null);
@@ -32,16 +20,6 @@ export default function ServicesPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-
-  // Derive categories dynamically from loaded services
-  const dynamicCategories = [
-    { id: 'all', name: 'All Services', icon: '🔌' },
-    ...Array.from(new Set(services.map((s) => s.category).filter(Boolean))).map((cat) => ({
-      id: cat as string,
-      name: (cat as string).charAt(0).toUpperCase() + (cat as string).slice(1),
-      icon: CATEGORY_ICONS[(cat as string).toLowerCase()] || '🔌',
-    })),
-  ];
 
   if (loading) {
     return (
@@ -67,10 +45,7 @@ export default function ServicesPage() {
     );
   }
 
-  const filteredServices = services.filter(service => {
-    const categoryMatch = selectedCategory === 'all' || service.category === selectedCategory;
-    return categoryMatch;
-  });
+  const filteredServices = services;
 
   const handleOpenInquiryForm = (service: any) => {
     setSelectedService(service);
@@ -106,16 +81,15 @@ export default function ServicesPage() {
         },
         body: JSON.stringify({
           ...formData,
-          serviceId: selectedService?._id,
-          serviceName: selectedService?.name,
-          serviceCategory: selectedService?.category,
+          serviceId: selectedService?.id,
+          serviceName: selectedService?.title,
           timestamp: new Date().toISOString()
         }),
       });
 
       if (response.ok) {
         setSubmitStatus('success');
-        setInstalledServices([...installedServices, selectedService!._id]);
+        setInstalledServices([...installedServices, selectedService!.id]);
         setTimeout(() => {
           handleCloseForm();
         }, 2000);
@@ -154,72 +128,26 @@ export default function ServicesPage() {
           </p>
         </motion.div>
 
-        {/* Category Filter */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="mb-8"
-        >
-          <div className="flex items-center gap-3 flex-wrap">
-            {dynamicCategories.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                  selectedCategory === cat.id
-                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/50'
-                    : 'bg-[#1a1a1a] text-gray-400 hover:bg-[#2a2a2a] hover:text-gray-300 border border-gray-800'
-                }`}
-              >
-                <span>{cat.icon}</span>
-                <span>{cat.name}</span>
-              </button>
-            ))}
-          </div>
-        </motion.div>
+        {/* Category Filter removed - services have no category field */}
 
         {/* Services Grid */}
         <div className="grid grid-cols-2 gap-6">
-          {filteredServices.map((service, index) => {
-            const getCategoryGradient = (category?: string) => {
-              const gradients: Record<string, string> = {
-                'infrastructure': 'from-purple-600/20 to-blue-600/20',
-                'frontend': 'from-orange-600/20 to-red-600/20',
-                'design': 'from-cyan-600/20 to-blue-600/20',
-                'security': 'from-green-600/20 to-emerald-600/20',
-                'backend': 'from-pink-600/20 to-purple-600/20',
-              };
-              return category && gradients[category] || 'from-gray-600/20 to-slate-600/20';
-            };
-
-            const getCategoryIcon = (category?: string) => {
-              const icons: Record<string, string> = {
-                'infrastructure': '☁️',
-                'frontend': '💻',
-                'design': '🎨',
-                'security': '🔒',
-                'backend': '⚙️',
-              };
-              return category && icons[category] || '🔌';
-            };
-
-            return (
+          {filteredServices.map((service, index) => (
               <motion.div
-                key={service._id}
+                key={service.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 * index }}
-                className={`bg-gradient-to-br ${getCategoryGradient(service.category)} border border-gray-700 rounded-lg p-6`}
+                className="bg-gradient-to-br from-gray-600/20 to-slate-600/20 border border-gray-700 rounded-lg p-6"
               >
                 {/* Service Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <span className="text-3xl">{service.icon || getCategoryIcon(service.category)}</span>
+                    <span className="text-3xl">{service.icon || '🔌'}</span>
                     <div>
-                      <h3 className="text-lg font-bold text-white">{service.name}</h3>
+                      <h3 className="text-lg font-bold text-white">{service.title}</h3>
                       <span className="text-xs text-gray-500 font-mono">
-                        {service.pricing?.type ? `${service.pricing.type} - ${service.pricing.amount}` : 'Custom Pricing'}
+                        {service.pricing || 'Custom Pricing'}
                       </span>
                     </div>
                   </div>
@@ -244,24 +172,10 @@ export default function ServicesPage() {
                   </div>
                 )}
 
-                {/* Deliverables count */}
-                <div className="flex items-center gap-4 mb-4">
-                  {service.deliverables && service.deliverables.length > 0 ? (
-                    <span className="text-sm text-gray-400">
-                      {service.deliverables.length} deliverables included
-                    </span>
-                  ) : (
-                    <span className="text-sm text-gray-500">Custom deliverables</span>
-                  )}
-                  {service.timeline && (
-                    <span className="text-sm text-gray-500">
-                      {service.timeline}
-                    </span>
-                  )}
-                </div>
+                {/* Deliverables/timeline not in API - omitted */}
 
                 {/* Install Button */}
-                {installedServices.includes(service._id) ? (
+                {installedServices.includes(service.id) ? (
                   <button
                     disabled
                     className="w-full py-2 bg-green-600/20 border border-green-600/50 rounded text-sm text-green-400 font-semibold cursor-not-allowed"
@@ -277,8 +191,7 @@ export default function ServicesPage() {
                   </button>
                 )}
               </motion.div>
-            );
-          })}
+          ))}
         </div>
 
         {/* Service Inquiry Modal */}
@@ -304,7 +217,7 @@ export default function ServicesPage() {
                   <div className="flex items-center gap-3">
                     <span className="text-3xl">{selectedService.icon || '🔌'}</span>
                     <div>
-                      <h2 className="text-2xl font-bold text-white">{selectedService.name}</h2>
+                      <h2 className="text-2xl font-bold text-white">{selectedService.title}</h2>
                       <p className="text-sm text-gray-400">Service Inquiry Form</p>
                     </div>
                   </div>

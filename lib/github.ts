@@ -96,21 +96,17 @@ export function parseGitHubUrl(url: string): { owner: string; repo: string } | n
 /**
  * Convert GitHub repo to Project format
  */
-export function convertGitHubRepoToProject(repo: GitHubRepo, featured: boolean = false) {
+export function convertGitHubRepoToProject(repo: GitHubRepo, isFeatured: boolean = false) {
   return {
-    _id: `github-${repo.id}`,
+    id: `github-${repo.id}`,
     title: repo.name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
     description: repo.description || 'No description available',
-    technologies: repo.topics.length > 0 ? repo.topics : [repo.language || 'Unknown'],
+    techStack: repo.topics.length > 0 ? repo.topics : [repo.language || 'Unknown'],
     githubUrl: repo.html_url,
-    liveUrl: repo.homepage || undefined,
-    image: undefined,
+    demoUrl: repo.homepage || undefined,
+    imageUrl: undefined,
     category: categorizeByLanguage(repo.language),
-    status: 'completed' as const,
-    featured: featured,
-    startDate: repo.created_at,
-    endDate: repo.updated_at,
-    highlights: [],
+    isFeatured: isFeatured,
   };
 }
 

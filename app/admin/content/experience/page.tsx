@@ -53,7 +53,7 @@ export default function ExperienceManagementPage() {
   const handleSave = async (data: any) => {
     try {
       if (editingExperience) {
-        await experienceAPI.update(editingExperience._id, data);
+        await experienceAPI.update(editingExperience.id, data);
       } else {
         await experienceAPI.create(data);
       }
@@ -93,7 +93,7 @@ export default function ExperienceManagementPage() {
           <div className="space-y-6 max-w-4xl mx-auto">
             {experiences.map((exp) => (
               <motion.div
-                key={exp._id}
+                key={exp.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-[#1a1625] border border-gray-800 rounded-lg p-6 hover:border-purple-600/50 transition-all"
@@ -123,7 +123,7 @@ export default function ExperienceManagementPage() {
                       Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(exp._id)}
+                      onClick={() => handleDelete(exp.id)}
                       className="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded transition-colors text-sm"
                     >
                       Delete

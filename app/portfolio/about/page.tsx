@@ -14,7 +14,7 @@ export default function AboutPage() {
     sessionStorage.setItem('fromIntro', 'true');
   }, []);
 
-  const featuredProjects = projects?.filter((p: any) => p.featured).slice(0, 3) || [];
+  const featuredProjects = projects?.filter((p: any) => p.isFeatured).slice(0, 3) || [];
   const topTechnologies = techStack?.slice(0, 3) || [];
 
   if (aboutLoading || techLoading || projectsLoading) {
@@ -313,7 +313,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {featuredProjects.map((project: any, index: number) => (
               <motion.div
-                key={project._id || `featured-project-${index}`}
+                key={project.id || `featured-project-${index}`}
                 initial={{ y: 30, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.8 + index * 0.15, duration: 0.6 }}
@@ -321,9 +321,9 @@ export default function AboutPage() {
               >
                 <div className="relative bg-[#1a1625] border border-gray-800 rounded-2xl overflow-hidden hover:border-purple-600/50 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-900/20">
                   <div className="relative aspect-video bg-gradient-to-br from-gray-800 to-gray-900 overflow-hidden">
-                    {project.image ? (
+                    {project.imageUrl ? (
                       <img
-                        src={project.image}
+                        src={project.imageUrl}
                         alt={project.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
@@ -347,7 +347,7 @@ export default function AboutPage() {
                       {project.description}
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {(project.technologies || []).slice(0, 4).map((tech: string, i: number) => (
+                      {(project.techStack || []).slice(0, 4).map((tech: string, i: number) => (
                         <span 
                           key={i} 
                           className="px-3 py-1.5 bg-purple-600/10 border border-purple-600/20 text-purple-400 text-xs font-medium rounded-full hover:bg-purple-600/20 transition-colors"
@@ -355,9 +355,9 @@ export default function AboutPage() {
                           {tech}
                         </span>
                       ))}
-                      {(project.technologies || []).length > 4 && (
+                      {(project.techStack || []).length > 4 && (
                         <span className="px-3 py-1.5 bg-gray-800 text-gray-400 text-xs font-medium rounded-full">
-                          +{(project.technologies || []).length - 4}
+                          +{(project.techStack || []).length - 4}
                         </span>
                       )}
                     </div>

@@ -53,7 +53,7 @@ export default function ServicesManagementPage() {
   const handleSave = async (data: any) => {
     try {
       if (editingService) {
-        await servicesAPI.update(editingService._id, data);
+        await servicesAPI.update(editingService.id, data);
       } else {
         await servicesAPI.create(data);
       }
@@ -93,7 +93,7 @@ export default function ServicesManagementPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {services.map((service) => (
               <motion.div
-                key={service._id}
+                key={service.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-[#1a1625] border border-gray-800 rounded-lg p-6 hover:border-purple-600/50 transition-all"
@@ -102,7 +102,7 @@ export default function ServicesManagementPage() {
                   <div className="text-4xl">{service.icon}</div>
 
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">{service.name}</h3>
+                <h3 className="text-xl font-bold text-white mb-2">{service.title}</h3>
                 <p className="text-gray-400 text-sm mb-4 line-clamp-3">
                   {service.description}
                 </p>
@@ -114,7 +114,7 @@ export default function ServicesManagementPage() {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(service._id)}
+                    onClick={() => handleDelete(service.id)}
                     className="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded transition-colors text-sm"
                   >
                     Delete
@@ -160,11 +160,11 @@ function ServiceModal({
   onSave: (data: any) => Promise<void>;
 }) {
   const [formData, setFormData] = useState({
-    name: service?.name || '',
+    title: service?.title || '',
     description: service?.description || '',
     icon: service?.icon || '💼',
     features: service?.features?.join('\n') || '',
-    pricing: typeof service?.pricing === 'object' ? service.pricing.amount : (service?.pricing || ''),
+    pricing: service?.pricing || '',
   });
   const [saving, setSaving] = useState(false);
 
@@ -216,11 +216,11 @@ function ServiceModal({
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Service Name</label>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Service Title</label>
               <input
                 type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 required
                 className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
               />
@@ -266,7 +266,7 @@ function ServiceModal({
             <label className="block text-gray-300 text-sm font-medium mb-2">Pricing</label>
             <input
               type="text"
-              value={formData.pricing as string}
+              value={formData.pricing}
               onChange={(e) => setFormData({ ...formData, pricing: e.target.value })}
               placeholder="$99/month"
               className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"

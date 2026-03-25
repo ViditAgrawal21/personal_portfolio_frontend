@@ -53,7 +53,7 @@ export default function EducationManagementPage() {
   const handleSave = async (data: any) => {
     try {
       if (editingEducation) {
-        await educationAPI.update(editingEducation._id, data);
+        await educationAPI.update(editingEducation.id, data);
       } else {
         await educationAPI.create(data);
       }
@@ -93,7 +93,7 @@ export default function EducationManagementPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {education.map((edu) => (
               <motion.div
-                key={edu._id}
+                key={edu.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-[#1a1625] border border-gray-800 rounded-lg p-6 hover:border-purple-600/50 transition-all"
@@ -118,7 +118,7 @@ export default function EducationManagementPage() {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(edu._id)}
+                    onClick={() => handleDelete(edu.id)}
                     className="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded transition-colors text-sm"
                   >
                     Delete

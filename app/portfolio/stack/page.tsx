@@ -104,7 +104,7 @@ export default function StackPage() {
                   <div className="space-y-3">
                     {techs.map((tech, idx) => (
                       <motion.div
-                        key={tech._id}
+                        key={tech.id}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.1 * categoryIdx + 0.05 * idx }}
@@ -112,10 +112,12 @@ export default function StackPage() {
                       >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            {tech.icon && (
-                              tech.icon.startsWith('http') || tech.icon.startsWith('/') ? (
+                            {tech.icon && (() => {
+                              const icon = tech.icon!.trim();
+                              const isUrl = /^https?:\/\//.test(icon) || icon.startsWith('/');
+                              return isUrl ? (
                                 <img
-                                  src={tech.icon}
+                                  src={icon}
                                   alt={tech.name}
                                   width={20}
                                   height={20}
@@ -123,9 +125,9 @@ export default function StackPage() {
                                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                                 />
                               ) : (
-                                <span>{tech.icon}</span>
-                              )
-                            )}
+                                <span>{icon}</span>
+                              );
+                            })()}
                             <span className="text-white text-sm font-medium">{tech.name}</span>
                           </div>
                           <span className={`text-${color}-400 text-xs font-mono`}>
@@ -145,7 +147,7 @@ export default function StackPage() {
                             } as React.CSSProperties}
                           />
                         </div>
-                        {tech.description && (
+                        {tech.description && !/^https?:\/\//.test(tech.description.trim()) && (
                           <p className="text-xs text-gray-500 mt-2">{tech.description}</p>
                         )}
                       </motion.div>

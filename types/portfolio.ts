@@ -7,7 +7,7 @@ export interface ApiResponse<T> {
 
 // About
 export interface About {
-  _id: string;
+  id: string;
   fullName: string;
   title: string;
   bio: string;
@@ -29,18 +29,12 @@ export interface About {
 
 // Service
 export interface Service {
-  _id: string;
-  name: string;
+  id: string;
+  title: string;
   description: string;
-  category?: string;
   icon?: string;
   features?: string[];
-  deliverables?: string[];
-  pricing?: {
-    type: string;
-    amount: string;
-  };
-  timeline?: string;
+  pricing?: string;
   displayOrder?: number;
   createdAt?: string;
   updatedAt?: string;
@@ -48,18 +42,15 @@ export interface Service {
 
 // Project
 export interface Project {
-  _id: string;
+  id: string;
   title: string;
   description: string;
-  technologies: string[];
-  image?: string;
-  liveUrl?: string;
+  techStack: string[];
+  imageUrl?: string;
+  demoUrl?: string;
   githubUrl?: string;
   category?: string;
-  featured: boolean;
-  status: 'completed' | 'in-progress' | 'planned';
-  startDate?: string;
-  endDate?: string;
+  isFeatured: boolean;
   displayOrder?: number;
   createdAt?: string;
   updatedAt?: string;
@@ -67,7 +58,7 @@ export interface Project {
 
 // Tech Stack
 export interface TechStack {
-  _id: string;
+  id: string;
   name: string;
   category: string;
   icon?: string;
@@ -81,7 +72,7 @@ export interface TechStack {
 
 // Experience
 export interface Experience {
-  _id: string;
+  id: string;
   company: string;
   position: string;
   description: string;
@@ -96,7 +87,7 @@ export interface Experience {
 
 // Education
 export interface Education {
-  _id: string;
+  id: string;
   institution: string;
   degree: string;
   field: string;

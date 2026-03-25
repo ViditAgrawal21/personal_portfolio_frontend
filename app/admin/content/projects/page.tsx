@@ -54,7 +54,7 @@ export default function ProjectsManagementPage() {
   const handleSave = async (data: any) => {
     try {
       if (editingProject) {
-        await projectsAPI.update(editingProject._id, data);
+        await projectsAPI.update(editingProject.id, data);
       } else {
         await projectsAPI.create(data);
       }
@@ -94,14 +94,14 @@ export default function ProjectsManagementPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map((project) => (
               <motion.div
-                key={project._id}
+                key={project.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-[#1a1625] border border-gray-800 rounded-lg overflow-hidden hover:border-purple-600/50 transition-all"
               >
-                {project.image && (
+                {project.imageUrl && (
                   <img 
-                    src={project.image} 
+                    src={project.imageUrl} 
                     alt={project.title}
                     className="w-full h-48 object-cover"
                   />
@@ -109,7 +109,7 @@ export default function ProjectsManagementPage() {
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-3">
                     <h3 className="text-lg font-bold text-white">{project.title}</h3>
-                    {project.featured && (
+                    {project.isFeatured && (
                       <span className="px-2 py-1 bg-yellow-600/20 text-yellow-400 text-xs rounded">
                         Featured
                       </span>
@@ -119,7 +119,7 @@ export default function ProjectsManagementPage() {
                     {project.description}
                   </p>
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {project.technologies.slice(0, 3).map((tech, i) => (
+                    {project.techStack.slice(0, 3).map((tech, i) => (
                       <span key={i} className="px-2 py-1 bg-gray-800 text-gray-300 text-xs rounded">
                         {tech}
                       </span>
@@ -133,7 +133,7 @@ export default function ProjectsManagementPage() {
                       Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(project._id)}
+                      onClick={() => handleDelete(project.id)}
                       className="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded transition-colors text-sm"
                     >
                       Delete
@@ -182,13 +182,12 @@ function ProjectModal({
   const [formData, setFormData] = useState({
     title: project?.title || '',
     description: project?.description || '',
-    technologies: project?.technologies?.join(', ') || '',
+    techStack: project?.techStack?.join(', ') || '',
     githubUrl: project?.githubUrl || '',
-    liveUrl: project?.liveUrl || '',
-    image: project?.image || '',
+    demoUrl: project?.demoUrl || '',
+    imageUrl: project?.imageUrl || '',
     category: project?.category || '',
-    status: project?.status || 'completed',
-    featured: project?.featured || false,
+    isFeatured: project?.isFeatured || false,
   });
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -200,7 +199,7 @@ function ProjectModal({
     try {
       setUploading(true);
       const url = await uploadImage(file);
-      setFormData({ ...formData, image: url });
+      setFormData({ ...formData, imageUrl: url });
     } catch (error) {
       alert('Failed to upload image');
     } finally {
@@ -215,7 +214,7 @@ function ProjectModal({
     try {
       await onSave({
         ...formData,
-        technologies: formData.technologies.split(',').map(t => t.trim()).filter(Boolean),
+        techStack: formData.techStack.split(',').map(t => t.trim()).filter(Boolean),
       });
     } catch (error) {
       // Error handled in parent
@@ -278,18 +277,18 @@ function ProjectModal({
 
           <div>
             <label className="block text-gray-300 text-sm font-medium mb-2">
-              Technologies (comma-separated)
+              Tech Stack (comma-separated)
             </label>
             <input
               type="text"
-              value={formData.technologies}
-              onChange={(e) => setFormData({ ...formData, technologies: e.target.value })}
+              value={formData.techStack}
+              onChange={(e) => setFormData({ ...formData, techStack: e.target.value })}
               placeholder="React, Node.js, TypeScript"
               className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div>
             <div>
               <label className="block text-gray-300 text-sm font-medium mb-2">Category</label>
               <input
@@ -299,19 +298,6 @@ function ProjectModal({
                 placeholder="Web Development"
                 className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
               />
-            </div>
-
-            <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Status</label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value as 'completed' | 'in-progress' | 'planned' })}
-                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-              >
-                <option value="completed">Completed</option>
-                <option value="in-progress">In Progress</option>
-                <option value="planned">Planned</option>
-              </select>
             </div>
           </div>
 
@@ -327,11 +313,11 @@ function ProjectModal({
             </div>
 
             <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Live URL</label>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Demo URL</label>
               <input
                 type="url"
-                value={formData.liveUrl}
-                onChange={(e) => setFormData({ ...formData, liveUrl: e.target.value })}
+                value={formData.demoUrl}
+                onChange={(e) => setFormData({ ...formData, demoUrl: e.target.value })}
                 className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
               />
             </div>
@@ -349,20 +335,20 @@ function ProjectModal({
               />
               {uploading && <div className="text-purple-400">Uploading...</div>}
             </div>
-            {formData.image && (
-              <img src={formData.image} alt="Preview" className="mt-4 h-32 rounded-lg object-cover" />
+            {formData.imageUrl && (
+              <img src={formData.imageUrl} alt="Preview" className="mt-4 h-32 rounded-lg object-cover" />
             )}
           </div>
 
           <div className="flex items-center gap-3">
             <input
               type="checkbox"
-              id="featured"
-              checked={formData.featured}
-              onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+              id="isFeatured"
+              checked={formData.isFeatured}
+              onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
               className="w-4 h-4 bg-[#0f1419] border-gray-700 rounded text-purple-600"
             />
-            <label htmlFor="featured" className="text-gray-300 text-sm">
+            <label htmlFor="isFeatured" className="text-gray-300 text-sm">
               Mark as featured project
             </label>
           </div>
