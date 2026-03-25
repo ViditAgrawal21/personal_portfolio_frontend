@@ -92,7 +92,29 @@ export default function IntroPage() {
   const slide = slides[currentSlide];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white overflow-hidden relative">
+    <div className="min-h-screen bg-[#050505] text-white overflow-hidden relative">
+      {/* Ambient Background Glows */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.1, 0.2, 0.1]
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-purple-900/30 blur-[120px] rounded-full mix-blend-screen"
+        />
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.3, 1],
+            opacity: [0.1, 0.3, 0.1]
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+          className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] bg-blue-900/20 blur-[120px] rounded-full mix-blend-screen"
+        />
+        {/* subtle grid overlay */}
+        <div className="absolute inset-0 bg-[url('/assests/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-5"></div>
+      </div>
+
       {/* Progress indicator */}
       <div className="fixed top-6 right-8 z-50 font-mono text-gray-500 text-sm">
         {currentSlide + 1}/5
@@ -137,7 +159,7 @@ export default function IntroPage() {
       </button>
 
       {/* Main content */}
-      <div className="flex items-center justify-center min-h-screen px-20">
+      <div className="flex items-center justify-center min-h-screen px-20 relative z-10">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}

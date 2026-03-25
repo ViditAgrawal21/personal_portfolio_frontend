@@ -111,12 +111,12 @@ export function AdminSidebar() {
     <motion.aside
       animate={{ width: adminSidebarOpen ? 256 : 64 }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="bg-[#1a1625] border-r border-gray-800 flex flex-col h-screen relative"
+      className="bg-[#0a0510]/80 backdrop-blur-xl border-r border-purple-900/30 flex flex-col h-screen relative z-20 shadow-[4px_0_24px_rgba(0,0,0,0.5)]"
     >
       {/* Toggle Button */}
       <button
         onClick={toggleAdminSidebar}
-        className="absolute -right-3 top-6 w-6 h-6 bg-[#1a1625] border border-gray-800 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-purple-600 transition-all z-10"
+        className="absolute -right-3 top-6 w-6 h-6 bg-[#1a0b2e] border border-purple-500/50 rounded-full flex items-center justify-center text-purple-400 hover:text-white hover:bg-purple-600 transition-all z-10 shadow-[0_0_10px_rgba(168,85,247,0.4)]"
       >
         <motion.svg
           animate={{ rotate: adminSidebarOpen ? 0 : 180 }}
@@ -131,7 +131,7 @@ export function AdminSidebar() {
       </button>
 
       {/* Logo */}
-      <div className="p-6 border-b border-gray-800">
+      <div className="p-6 border-b border-purple-900/30">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
             <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -165,7 +165,7 @@ export function AdminSidebar() {
               </div>
             ) : (
               <div key={index} className="pt-4 pb-2 px-2">
-                <div className="h-px bg-gray-800 mx-2"></div>
+                <div className="h-px bg-purple-900/30 mx-2"></div>
               </div>
             );
           }
@@ -175,16 +175,16 @@ export function AdminSidebar() {
             <div key={item.href} className="relative group">
               <Link
                 href={item.href!}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all group relative ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all group relative overflow-hidden ${
                   isActive
-                    ? 'bg-purple-600 text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#2a2534]'
+                    ? 'text-white shadow-[0_4px_20px_rgba(168,85,247,0.4)]'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
                 } ${!adminSidebarOpen ? 'justify-center px-2' : ''}`}
               >
                 {isActive && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute inset-0 bg-purple-600 rounded-lg"
+                    className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-90"
                     initial={false}
                     transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                   />

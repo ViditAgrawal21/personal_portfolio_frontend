@@ -15,8 +15,10 @@ export function StatCard({ title, value, change, icon, trend }: StatCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-[#1a1f2e] border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-colors"
+      className="bg-[#0f0f0f]/80 backdrop-blur-xl border border-gray-800/80 rounded-2xl p-6 hover:border-purple-500/50 hover:shadow-[0_0_20px_rgba(168,85,247,0.15)] transition-all duration-300 relative overflow-hidden group"
     >
+      {/* Decorative gradient blur */}
+      <div className="absolute -top-10 -right-10 w-32 h-32 bg-purple-600/10 rounded-full blur-2xl group-hover:bg-purple-600/20 transition-colors"></div>
       <div className="flex items-start justify-between">
         <div>
           <p className="text-gray-400 text-sm font-medium uppercase tracking-wider mb-2">

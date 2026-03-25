@@ -113,7 +113,7 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#0a0a0a" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
       </head>
-      <body className={`${jetbrainsMono.variable} ${inter.variable} font-mono antialiased`}>
+      <body suppressHydrationWarning className={`${jetbrainsMono.variable} ${inter.variable} font-mono antialiased`}>
         <Providers>
           {children}
         </Providers>

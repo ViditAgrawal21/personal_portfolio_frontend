@@ -38,12 +38,12 @@ export function IDESidebar() {
         ease: 'easeInOut',
         delay: 0.2
       }}
-      className="bg-[#1e1e1e] border-r border-gray-800 flex flex-col h-screen relative"
+      className="bg-[#0a0a0a] border-r border-gray-800/60 flex flex-col h-screen relative z-10 shadow-[4px_0_24px_rgba(0,0,0,0.5)]"
     >
       {/* Toggle Button */}
       <button
         onClick={togglePortfolioSidebar}
-        className="absolute -right-3 top-3 w-6 h-6 bg-[#1e1e1e] border border-gray-800 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-blue-600 transition-all z-10"
+        className="absolute -right-3 top-3 w-6 h-6 bg-[#0d0d0d] border border-gray-800/60 rounded-full flex items-center justify-center text-gray-500 hover:text-white hover:bg-purple-600 hover:border-purple-500 transition-all z-20 shadow-lg"
       >
         <motion.svg
           animate={{ rotate: portfolioSidebarOpen ? 0 : 180 }}
@@ -58,7 +58,7 @@ export function IDESidebar() {
       </button>
 
       {/* Explorer header */}
-      <div className="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
+      <div className="px-4 py-3 border-b border-gray-800/60 flex items-center justify-between bg-[#0d0d0d]/40">
         <motion.span
           animate={{ opacity: portfolioSidebarOpen ? 1 : 0 }}
           transition={{ duration: 0.3, delay: portfolioSidebarOpen ? 0.1 : 0 }}
@@ -122,10 +122,10 @@ export function IDESidebar() {
                       >
                         <Link
                           href={file.path}
-                          className={`flex items-center gap-2 px-2 py-1 rounded text-sm transition-colors ${
+                          className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-all ${
                             isActive
-                              ? 'bg-gray-800 text-white'
-                              : 'text-gray-400 hover:bg-gray-800/50 hover:text-gray-300'
+                              ? 'bg-purple-500/10 text-white border border-purple-500/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]'
+                              : 'text-gray-400 border border-transparent hover:bg-white/5 hover:text-gray-200'
                           }`}
                         >
                           <span>{file.icon}</span>
@@ -146,10 +146,10 @@ export function IDESidebar() {
                   <div key={file.path} className="relative group">
                     <Link
                       href={file.path}
-                      className={`flex items-center justify-center w-12 h-8 rounded transition-colors ${
+                      className={`flex items-center justify-center w-12 h-8 rounded-md transition-all ${
                         isActive
-                          ? 'bg-blue-600 text-white'
-                          : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                          ? 'bg-purple-500/20 text-white border border-purple-500/30'
+                          : 'text-gray-500 hover:bg-white/5 hover:text-gray-200'
                       }`}
                     >
                       <span className="text-sm">{file.icon}</span>

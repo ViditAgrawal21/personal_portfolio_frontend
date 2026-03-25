@@ -113,10 +113,22 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="h-full bg-[#1e1e1e] overflow-auto">
+    <div className="h-full bg-transparent overflow-auto relative">
 
       {/* Editor content */}
-      <div className="p-8">
+      <div className="p-8 max-w-7xl mx-auto">
+        {/* Pseudo-code header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="font-mono text-sm mb-12"
+        >
+          <span className="text-gray-500">{'{'}</span><br/>
+          <span className="text-gray-500 ml-4">"file": <span className="text-green-300">"projects.json"</span>,</span><br/>
+          <span className="text-gray-500 ml-4">"description": <span className="text-green-300">"Featured portfolio works"</span>,</span><br/>
+          <span className="text-gray-500 ml-4">"data": [</span>
+        </motion.div>
+
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -127,7 +139,7 @@ export default function ProjectsPage() {
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">Featured Projects</h1>
               <p className="text-gray-400 font-mono text-sm">
-                <span className="text-green-400">→</span> SELECT * FROM projects WHERE status IN ['production', 'beta', 'alpha']
+                <span className="text-purple-400">const</span> <span className="text-blue-300">projects</span> = <span className="text-green-300">fetch</span>(<span className="text-orange-300">'/api/projects'</span>);
               </p>
             </div>
             <div className="flex gap-2">
@@ -178,11 +190,11 @@ export default function ProjectsPage() {
           <div className="grid grid-cols-2 gap-6">
             {filteredProjects.map((project, index) => (
               <motion.div
-                key={project._id}
+                key={project._id || `project-${index}`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * index }}
-                className="bg-[#252526] border border-gray-800 rounded-lg overflow-hidden hover:border-purple-600/50 transition-all group"
+                className="bg-[#0f0f0f]/80 backdrop-blur-md border border-gray-800/80 rounded-xl overflow-hidden hover:border-purple-600/50 hover:shadow-lg hover:shadow-purple-500/10 transition-all group"
               >
                 <div className="p-6">
                   {/* Project image/icon */}
@@ -205,13 +217,13 @@ export default function ProjectsPage() {
                   <div className="flex items-start justify-between mb-3">
                     <h3 className="text-xl font-bold text-white">{project.title}</h3>
                     <span className={`px-2 py-1 text-xs rounded-full ${
-                      project.status === 'completed' 
+                      (project?.status || 'completed') === 'completed' 
                         ? 'bg-green-600/20 text-green-400'
-                        : project.status === 'in-progress'
+                        : project?.status === 'in-progress'
                         ? 'bg-yellow-600/20 text-yellow-400'
                         : 'bg-gray-600/20 text-gray-400'
                     }`}>
-                      {project.status.toUpperCase().replace('-', ' ')}
+                      {(project?.status || 'completed').toString().toUpperCase().replace('-', ' ')}
                     </span>
                   </div>
 
@@ -222,17 +234,17 @@ export default function ProjectsPage() {
 
                   {/* Tags */}
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {project.technologies.slice(0, 4).map(tech => (
+                    {(project.technologies || []).slice(0, 4).map((tech, techIdx) => (
                       <span
-                        key={tech}
+                        key={tech || `tech-${techIdx}`}
                         className="px-2 py-1 bg-gray-800 text-gray-300 text-xs rounded"
                       >
                         {tech}
                       </span>
                     ))}
-                    {project.technologies.length > 4 && (
+                    {(project.technologies || []).length > 4 && (
                       <span className="px-2 py-1 bg-gray-800 text-gray-500 text-xs rounded">
-                        +{project.technologies.length - 4}
+                        +{(project.technologies || []).length - 4}
                       </span>
                     )}
                   </div>
@@ -282,6 +294,11 @@ export default function ProjectsPage() {
                 </div>
               </motion.div>
             ))}
+          </div>
+          
+          <div className="font-mono text-sm mt-12 text-gray-500">
+            <span className="ml-4">]</span><br/>
+            <span>{'}'}</span>
           </div>
         </motion.div>
       </div>

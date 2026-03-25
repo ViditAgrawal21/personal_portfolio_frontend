@@ -68,7 +68,7 @@ export default function PortfolioLayout({
         <IDETransition onComplete={() => setShowTransition(false)} />
       )}
 
-      <div className="flex h-screen bg-[#1e1e1e] text-white overflow-hidden">
+      <div className="flex h-screen bg-[#0d0d0d] text-gray-200 overflow-hidden font-sans selection:bg-purple-500/30">
         {/* Sidebar */}
         <IDESidebar />
 
@@ -85,15 +85,15 @@ export default function PortfolioLayout({
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="h-12 bg-[#1e1e1e] border-b border-gray-800 flex items-center justify-between px-4"
+            className="h-14 bg-[#0d0d0d]/80 backdrop-blur-md border-b border-gray-800/60 flex items-center justify-between px-4 z-20"
           >
             {/* Left: Logo and menus */}
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-purple-600 rounded flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">D</span>
+              <div className="flex items-center gap-2 group cursor-pointer">
+                <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-blue-600 rounded-md flex items-center justify-center shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-all">
+                  <span className="text-white text-xs font-bold leading-none">V</span>
                 </div>
-                <span className="text-sm font-semibold text-gray-300">DEV_OS v3.0.1</span>
+                <span className="text-sm font-semibold tracking-wide text-gray-200 group-hover:text-white transition-colors">DEV_OS v3.0</span>
               </div>
               <div className="flex items-center gap-4 text-sm ml-4">
                 <span className="text-gray-400 hover:text-white cursor-pointer">File</span>
@@ -113,7 +113,7 @@ export default function PortfolioLayout({
                 <input
                   type="text"
                   placeholder="Search files or commands (⌘+K)"
-                  className="w-full pl-10 pr-4 py-1.5 bg-[#2d2d2d] border border-gray-700 rounded text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-purple-500"
+                  className="w-full pl-10 pr-4 py-1.5 bg-gray-900/50 border border-gray-800 rounded-md text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
                 />
               </div>
             </div>
@@ -166,20 +166,31 @@ export default function PortfolioLayout({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex-1 flex flex-col overflow-hidden"
+            className="flex-1 flex flex-col overflow-hidden relative"
           >
+            {/* Subtle background glow for the editor area */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-purple-500/5 blur-[100px] pointer-events-none rounded-full"></div>
+
             {/* Tab bar */}
-            <div className="flex items-center bg-[#1e1e1e] border-b border-gray-800">
+            <div className="flex items-center bg-[#0d0d0d] border-b border-gray-800/60 z-10">
               {openTabs.map((tab) => {
                 const isActive = pathname?.includes(tab);
                 return (
                   <Link
                     key={tab}
                     href={`/portfolio/${tab}`}
-                    className={`flex items-center gap-2 px-4 py-2.5 border-r border-gray-700 group hover:bg-[#252526] transition-colors ${
-                      isActive ? 'bg-[#252526] border-t-2 border-t-purple-500' : ''
+                    className={`flex items-center gap-2 px-4 py-2.5 border-r border-gray-800/60 group hover:bg-[#151515] transition-colors relative ${
+                      isActive ? 'bg-[#151515] text-gray-200' : 'text-gray-500 hover:text-gray-300'
                     }`}
                   >
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeTabIndicator"
+                        className="absolute top-0 left-0 w-full h-[2px] bg-purple-500"
+                        initial={false}
+                        transition={{ duration: 0.3 }}
+                      />
+                    )}
                     <span className={fileColors[tab]}>{fileIcons[tab]}</span>
                     <span className={`text-sm ${isActive ? 'text-gray-300' : 'text-gray-500'}`}>
                       {tab}{fileExtensions[tab]}
@@ -208,7 +219,7 @@ export default function PortfolioLayout({
               </div>
             </div>
 
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 overflow-auto bg-[#0a0a0a] relative z-0 hide-scrollbar">
               {children}
             </div>
           </motion.div>

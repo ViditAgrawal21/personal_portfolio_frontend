@@ -29,8 +29,25 @@ export default function AboutPage() {
   }
 
   return (
-    <div className="h-full bg-[#0f1419] overflow-auto">
+    <div className="h-full bg-transparent overflow-auto relative">
       <div className="max-w-7xl mx-auto px-8 py-16">
+        
+        {/* Pseudo-code header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="font-mono text-sm mb-12"
+        >
+          <span className="text-gray-500">#!/bin/bash</span><br/>
+          <span className="text-gray-500"># ==========================================</span><br/>
+          <span className="text-gray-500"># File: about.sh</span><br/>
+          <span className="text-gray-500"># Description: System architect profile</span><br/>
+          <span className="text-gray-500"># Author: <span className="text-green-400">{about?.fullName || 'Root'}</span></span><br/>
+          <span className="text-gray-500"># ==========================================</span><br/>
+          <br/>
+          <span className="text-purple-400">echo</span> <span className="text-green-300">"Initializing profile sequence..."</span>
+        </motion.div>
+
         {/* Hero Section */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -133,10 +150,10 @@ export default function AboutPage() {
             <div className="text-sm text-gray-400 uppercase tracking-wider">Projects</div>
           </div>
 
-          <div className="bg-[#1a1625] border border-gray-800 rounded-xl p-6 text-center hover:border-purple-600/50 transition-all">
-            <div className="text-5xl mb-3">⭐</div>
-            <div className="text-3xl font-bold text-white mb-2">100%</div>
-            <div className="text-sm text-gray-400 uppercase tracking-wider">Client Satisfaction</div>
+          <div className="bg-[#0f0f0f]/80 backdrop-blur-md border border-gray-800/80 rounded-xl p-6 text-center shadow-lg hover:border-purple-600/50 hover:shadow-purple-500/10 transition-all group">
+            <div className="text-5xl mb-3 transform group-hover:scale-110 transition-transform">⭐</div>
+            <div className="text-3xl font-bold text-white mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-500 group-hover:from-purple-400 group-hover:to-pink-400">100%</div>
+            <div className="text-sm text-gray-500 font-mono tracking-wider">Client Satisfaction</div>
           </div>
         </motion.div>
 
@@ -158,7 +175,7 @@ export default function AboutPage() {
                 {topTechnologies.length > 0 ? (
                   topTechnologies.map((tech: any, index: number) => (
                     <motion.div
-                      key={tech._id}
+                      key={`tech-item-${index}`}
                       initial={{ x: -20, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
                       transition={{ delay: 0.7 + index * 0.1 }}
@@ -292,7 +309,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {featuredProjects.map((project: any, index: number) => (
               <motion.div
-                key={project._id}
+                key={project._id || `featured-project-${index}`}
                 initial={{ y: 30, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.8 + index * 0.15, duration: 0.6 }}
@@ -326,7 +343,7 @@ export default function AboutPage() {
                       {project.description}
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {project.technologies.slice(0, 4).map((tech: string, i: number) => (
+                      {(project.technologies || []).slice(0, 4).map((tech: string, i: number) => (
                         <span 
                           key={i} 
                           className="px-3 py-1.5 bg-purple-600/10 border border-purple-600/20 text-purple-400 text-xs font-medium rounded-full hover:bg-purple-600/20 transition-colors"
@@ -334,9 +351,9 @@ export default function AboutPage() {
                           {tech}
                         </span>
                       ))}
-                      {project.technologies.length > 4 && (
+                      {(project.technologies || []).length > 4 && (
                         <span className="px-3 py-1.5 bg-gray-800 text-gray-400 text-xs font-medium rounded-full">
-                          +{project.technologies.length - 4}
+                          +{(project.technologies || []).length - 4}
                         </span>
                       )}
                     </div>

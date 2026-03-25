@@ -6,14 +6,21 @@ import { useState } from 'react';
 export default function ResumePage() {
   const [zoom, setZoom] = useState(100);
 
-  const handleDownload = () => {
-    // Create a temporary link element to trigger download
-    const link = document.createElement('a');
-    link.href = '/assests/vidit_agrawal_1.pdf';
-    link.download = 'Vidit_Agrawal_Resume.pdf';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    try {
+      const response = await fetch('/assests/vidit_agrawal_1.pdf');
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = 'Vidit_Agrawal_Resume.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open('/assests/vidit_agrawal_1.pdf', '_blank');
+    }
   };
 
   return (

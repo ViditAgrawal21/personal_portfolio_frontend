@@ -73,7 +73,7 @@ export default function AdminDashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-[#1a1f2e] border border-gray-800 rounded-xl p-6"
+          className="bg-[#0f0f0f]/80 backdrop-blur-md border border-gray-800/80 rounded-2xl p-6 shadow-lg relative overflow-hidden"
         >
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -116,7 +116,7 @@ export default function AdminDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="lg:col-span-2 bg-[#1a1f2e] border border-gray-800 rounded-xl p-6"
+            className="lg:col-span-2 bg-[#0f0f0f]/80 backdrop-blur-md border border-gray-800/80 rounded-2xl p-6 shadow-lg relative overflow-hidden"
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-white">Recent Inquiries</h2>
@@ -180,7 +180,7 @@ export default function AdminDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-[#1a1f2e] border border-gray-800 rounded-xl p-6"
+            className="bg-[#0f0f0f]/80 backdrop-blur-md border border-gray-800/80 rounded-2xl p-6 shadow-lg relative overflow-hidden"
           >
             <h2 className="text-xl font-bold text-white mb-6">Action Items</h2>
             
