@@ -151,7 +151,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="col-span-3">
                     <span className="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs font-medium">
-                      {inquiry.serviceType}
+                      {inquiry.companyName || '—'}
                     </span>
                   </div>
                   <div className="col-span-2 text-white text-sm">

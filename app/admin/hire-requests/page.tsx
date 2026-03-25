@@ -132,7 +132,7 @@ export default function HireRequestsPage() {
 
   const filteredData = data?.data.filter(req => {
     if (selectedFilter !== 'all' && req.status !== selectedFilter) return false;
-    if (searchQuery && !req.projectName.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (searchQuery && !req.candidateName.toLowerCase().includes(searchQuery.toLowerCase()) && !req.companyName.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
 
@@ -296,16 +296,16 @@ export default function HireRequestsPage() {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className={`w-10 h-10 bg-gradient-to-br ${randomColor} rounded-lg flex items-center justify-center text-white font-semibold text-sm`}>
-                              {getInitials(request.projectName)}
+                              {getInitials(request.candidateName)}
                             </div>
                             <div>
-                              <p className="text-white font-medium">{request.projectName}</p>
+                              <p className="text-white font-medium">{request.companyName}</p>
                               <p className="text-gray-400 text-sm">{request.email.split('@')[1]}</p>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-white">{request.techStack.join(', ')}</p>
+                          <p className="text-white">{request.roleType}</p>
                         </td>
                         <td className="px-6 py-4">
                           <p className="text-gray-400 text-sm truncate max-w-md">
@@ -396,8 +396,12 @@ export default function HireRequestsPage() {
                 </h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-sm text-gray-400">Project Name</label>
-                    <p className="text-white font-medium text-lg">{viewingRequest.projectName}</p>
+                    <label className="text-sm text-gray-400">Candidate Name</label>
+                    <p className="text-white font-medium text-lg">{viewingRequest.candidateName}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Company</label>
+                    <p className="text-white font-medium">{viewingRequest.companyName}</p>
                   </div>
                   <div>
                     <label className="text-sm text-gray-400">Contact Email</label>
@@ -415,14 +419,14 @@ export default function HireRequestsPage() {
                   Tech Stack Required
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {viewingRequest.techStack.map((tech: string, i: number) => (
-                    <span
-                      key={i}
-                      className="px-3 py-1 bg-purple-600/20 text-purple-400 border border-purple-600/30 rounded-full text-sm font-medium"
-                    >
-                      {tech}
+                  <span className="px-3 py-1 bg-purple-600/20 text-purple-400 border border-purple-600/30 rounded-full text-sm font-medium">
+                    {viewingRequest.roleType}
+                  </span>
+                  {viewingRequest.salaryOffer && (
+                    <span className="px-3 py-1 bg-green-600/20 text-green-400 border border-green-600/30 rounded-full text-sm font-medium">
+                      {viewingRequest.salaryOffer}
                     </span>
-                  ))}
+                  )}
                 </div>
               </div>
 
@@ -526,7 +530,7 @@ export default function HireRequestsPage() {
               <div>
                 <h2 className="text-2xl font-bold text-white">Send Reply</h2>
                 <p className="text-sm text-gray-400 mt-1">To: {replyingToRequest.email}</p>
-                <p className="text-sm text-gray-400">Project: {replyingToRequest.projectName}</p>
+                <p className="text-sm text-gray-400">From: {replyingToRequest.candidateName}, {replyingToRequest.companyName}</p>
               </div>
               <button
                 onClick={() => setReplyingToRequest(null)}
@@ -546,7 +550,7 @@ export default function HireRequestsPage() {
                 <textarea
                   value={replyMessage}
                   onChange={(e) => setReplyMessage(e.target.value)}
-                  placeholder={`Hi,\n\nThank you for your interest in the ${replyingToRequest.projectName} project.\n\nI'd be happy to discuss this opportunity with you. Based on your requirements for ${replyingToRequest.techStack.join(', ')}, I believe I can help you achieve your goals.\n\nWould you like to schedule a call to discuss the project details and timeline?\n\nBest regards`}
+                  placeholder={`Hi ${replyingToRequest.candidateName},\n\nThank you for your interest in working together.\n\nI've reviewed your request for a ${replyingToRequest.roleType} role and I'd be happy to discuss this opportunity further.\n\nWould you like to schedule a call to discuss the details?\n\nBest regards`}
                   className="w-full h-64 px-4 py-3 bg-[#1a1625] border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                   required
                 />

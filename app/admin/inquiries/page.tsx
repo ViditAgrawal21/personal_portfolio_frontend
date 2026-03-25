@@ -131,6 +131,16 @@ export default function ServiceInquiriesPage() {
     await updateStatus.mutateAsync({ id, payload: { status: newStatus } });
   };
 
+  const filteredData = data?.data.filter(inquiry => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      inquiry.clientName.toLowerCase().includes(q) ||
+      (inquiry.companyName?.toLowerCase().includes(q) ?? false) ||
+      inquiry.email.toLowerCase().includes(q)
+    );
+  });
+
   const toggleSelectInquiry = (id: string) => {
     setSelectedInquiries(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
@@ -280,7 +290,7 @@ export default function ServiceInquiriesPage() {
                     Client Name
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Service Type
+                    Company
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Budget
@@ -313,7 +323,7 @@ export default function ServiceInquiriesPage() {
                     </td>
                   </tr>
                 ) : (
-                  data?.data.map((inquiry) => (
+                  filteredData?.map((inquiry) => (
                     <tr key={inquiry.id} className="hover:bg-[#1a1f2e] transition-colors">
                       <td className="px-6 py-4">
                         <input
@@ -330,10 +340,8 @@ export default function ServiceInquiriesPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          serviceTypeColors[inquiry.serviceType as keyof typeof serviceTypeColors] || 'bg-gray-600/20 text-gray-400'
-                        }`}>
-                          {inquiry.serviceType}
+                        <span className="text-white text-sm">
+                          {inquiry.companyName || '—'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-white">
@@ -502,16 +510,24 @@ export default function ServiceInquiriesPage() {
                 </h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-sm text-gray-400">Service Type</label>
-                    <p className="text-white font-medium">{viewingInquiry.serviceType}</p>
+                    <label className="text-sm text-gray-400">Company</label>
+                    <p className="text-white font-medium">{viewingInquiry.companyName || 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Phone Number</label>
+                    <p className="text-white font-medium">{viewingInquiry.phoneNumber || 'Not specified'}</p>
                   </div>
                   <div>
                     <label className="text-sm text-gray-400">Budget Range</label>
                     <p className="text-white font-medium">{viewingInquiry.budgetRange || 'Not specified'}</p>
                   </div>
                   <div>
-                    <label className="text-sm text-gray-400">Requirements</label>
-                    <p className="text-white whitespace-pre-wrap">{viewingInquiry.requirements}</p>
+                    <label className="text-sm text-gray-400">Timeline</label>
+                    <p className="text-white font-medium">{viewingInquiry.timeline || 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Project Details</label>
+                    <p className="text-white whitespace-pre-wrap">{viewingInquiry.projectDetails}</p>
                   </div>
                 </div>
               </div>
@@ -606,7 +622,7 @@ export default function ServiceInquiriesPage() {
                 <h2 className="text-2xl font-bold text-white">Send Reply</h2>
                 <p className="text-sm text-gray-400 mt-1">To: {replyingToInquiry.email}</p>
                 <p className="text-sm text-gray-400">Client: {replyingToInquiry.clientName}</p>
-                <p className="text-sm text-gray-400">Service: {replyingToInquiry.serviceType}</p>
+                <p className="text-sm text-gray-400">Company: {replyingToInquiry.companyName || '—'}</p>
               </div>
               <button
                 onClick={() => setReplyingToInquiry(null)}
@@ -626,7 +642,7 @@ export default function ServiceInquiriesPage() {
                 <textarea
                   value={replyMessage}
                   onChange={(e) => setReplyMessage(e.target.value)}
-                  placeholder={`Hi ${replyingToInquiry.clientName},\n\nThank you for your interest in ${replyingToInquiry.serviceType} services.\n\nI'd be happy to discuss your requirements in detail. Based on what you've shared, I believe I can help you achieve your goals within your budget range of ${replyingToInquiry.budgetRange || 'your specified budget'}.\n\nWould you like to schedule a call to discuss the project timeline and next steps?\n\nBest regards`}
+                  placeholder={`Hi ${replyingToInquiry.clientName},\n\nThank you for reaching out about your project.\n\nI'd be happy to discuss your requirements in detail. Based on what you've shared, I believe I can help you within your budget range of ${replyingToInquiry.budgetRange || 'your specified budget'}.\n\nWould you like to schedule a call to discuss the project timeline and next steps?\n\nBest regards`}
                   className="w-full h-64 px-4 py-3 bg-[#1a1625] border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                   required
                 />
