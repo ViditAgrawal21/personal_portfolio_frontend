@@ -9,9 +9,9 @@ Console → Network Tab → Look for API calls
 ```
 
 **Expected to see:**
-- ✅ `GET https://personal-portfolio-backend-ec6a.onrender.com/api/content/about` - Status 200
-- ✅ `GET https://personal-portfolio-backend-ec6a.onrender.com/api/content/services` - Status 200  
-- ✅ `GET https://personal-portfolio-backend-ec6a.onrender.com/api/content/stack` - Status 200
+- ✅ `GET https://portfolio-backend-vxhcl34meq-el.a.run.app/api/content/about` - Status 200
+- ✅ `GET https://portfolio-backend-vxhcl34meq-el.a.run.app/api/content/services` - Status 200  
+- ✅ `GET https://portfolio-backend-vxhcl34meq-el.a.run.app/api/content/stack` - Status 200
 
 **If you see:**
 - ❌ `404 Not Found` → Wrong URL
@@ -21,10 +21,10 @@ Console → Network Tab → Look for API calls
 ### **2. Test API Directly in Browser**
 
 **Open these URLs in new browser tab:**
-1. https://personal-portfolio-backend-ec6a.onrender.com/api/content/about
-2. https://personal-portfolio-backend-ec6a.onrender.com/api/content/services  
-3. https://personal-portfolio-backend-ec6a.onrender.com/api/content/stack
-4. https://personal-portfolio-backend-ec6a.onrender.com/api/content/projects
+1. https://portfolio-backend-vxhcl34meq-el.a.run.app/api/content/about
+2. https://portfolio-backend-vxhcl34meq-el.a.run.app/api/content/services  
+3. https://portfolio-backend-vxhcl34meq-el.a.run.app/api/content/stack
+4. https://portfolio-backend-vxhcl34meq-el.a.run.app/api/content/projects
 
 **Expected Response:**
 ```json
@@ -41,7 +41,7 @@ Console → Network Tab → Look for API calls
 useEffect(() => {
   console.log('🔍 Fetching about data...');
   
-  fetch('https://personal-portfolio-backend-ec6a.onrender.com/api/content/about')
+  fetch('https://portfolio-backend-vxhcl34meq-el.a.run.app/api/content/about')
     .then(response => {
       console.log('📡 API Response Status:', response.status);
       console.log('📡 API Response Headers:', response.headers);
@@ -67,10 +67,10 @@ useEffect(() => {
 **Ensure your frontend has:**
 ```env
 # .env.local (for Next.js)
-NEXT_PUBLIC_API_URL=https://personal-portfolio-backend-ec6a.onrender.com
+NEXT_PUBLIC_API_URL=https://portfolio-backend-vxhcl34meq-el.a.run.app
 
 # .env (for React)  
-REACT_APP_API_URL=https://personal-portfolio-backend-ec6a.onrender.com
+REACT_APP_API_URL=https://portfolio-backend-vxhcl34meq-el.a.run.app
 ```
 
 **And use in code:**
@@ -87,7 +87,7 @@ console.log('🔧 API Base URL:', API_BASE);
 fetch('/api/content/about')  // This looks for localhost
 
 // Correct  
-fetch('https://personal-portfolio-backend-ec6a.onrender.com/api/content/about')
+fetch('https://portfolio-backend-vxhcl34meq-el.a.run.app/api/content/about')
 ```
 
 #### **❌ Issue: Missing Error Handling**
@@ -142,12 +142,12 @@ if (apiResponse.success) {
 **Test from your frontend project directory:**
 ```bash
 # Test API connectivity
-curl https://personal-portfolio-backend-ec6a.onrender.com/api/content/about
+curl https://portfolio-backend-vxhcl34meq-el.a.run.app/api/content/about
 
 # Check if your frontend can reach backend
 npm run dev
 # Then open browser console and run:
-fetch('https://personal-portfolio-backend-ec6a.onrender.com/api/content/about').then(r=>r.json()).then(console.log)
+fetch('https://portfolio-backend-vxhcl34meq-el.a.run.app/api/content/about').then(r=>r.json()).then(console.log)
 ```
 
 ### **8. Expected Data Structures**

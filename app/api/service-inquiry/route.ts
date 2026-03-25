@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://personal-portfolio-backend-ec6a.onrender.com';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://portfolio-backend-vxhcl34meq-el.a.run.app';
 
 export async function POST(request: NextRequest) {
   try {

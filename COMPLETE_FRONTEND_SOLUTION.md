@@ -13,7 +13,7 @@ Your backend APIs are working perfectly, but frontend is getting empty data.
 const API_BASE = 'http://localhost:5000';
 
 // ✅ Correct - Use your deployed backend URL  
-const API_BASE = 'https://personal-portfolio-backend-ec6a.onrender.com';
+const API_BASE = 'https://portfolio-backend-vxhcl34meq-el.a.run.app';
 ```
 
 #### **2. Missing Error Handling**
@@ -27,7 +27,7 @@ useEffect(() => {
 
 // ✅ Correct - Proper error handling & URL
 useEffect(() => {
-  fetch('https://personal-portfolio-backend-ec6a.onrender.com/api/content/about')
+  fetch('https://portfolio-backend-vxhcl34meq-el.a.run.app/api/content/about')
     .then(res => {
       if (!res.ok) throw new Error('Network response was not ok');
       return res.json();
@@ -50,9 +50,9 @@ useEffect(() => {
 
 **For React/Next.js - Add to `.env.local`:**
 ```env
-NEXT_PUBLIC_API_URL=https://personal-portfolio-backend-ec6a.onrender.com
+NEXT_PUBLIC_API_URL=https://portfolio-backend-vxhcl34meq-el.a.run.app
 # or for React
-REACT_APP_API_URL=https://personal-portfolio-backend-ec6a.onrender.com
+REACT_APP_API_URL=https://portfolio-backend-vxhcl34meq-el.a.run.app
 ```
 
 **Use in code:**
@@ -73,7 +73,7 @@ const AboutSection = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const API_BASE = 'https://personal-portfolio-backend-ec6a.onrender.com';
+  const API_BASE = 'https://portfolio-backend-vxhcl34meq-el.a.run.app';
 
   useEffect(() => {
     const fetchAbout = async () => {
@@ -184,7 +184,7 @@ const ServicesSection = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const API_BASE = 'https://personal-portfolio-backend-ec6a.onrender.com';
+  const API_BASE = 'https://portfolio-backend-vxhcl34meq-el.a.run.app';
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -265,7 +265,7 @@ const TechStackSection = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const API_BASE = 'https://personal-portfolio-backend-ec6a.onrender.com';
+  const API_BASE = 'https://portfolio-backend-vxhcl34meq-el.a.run.app';
 
   useEffect(() => {
     const fetchTechStack = async () => {
@@ -369,7 +369,7 @@ const ProjectsSection = ({ showFeaturedOnly = false, limit = null }) => {
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all');
 
-  const API_BASE = 'https://personal-portfolio-backend-ec6a.onrender.com';
+  const API_BASE = 'https://portfolio-backend-vxhcl34meq-el.a.run.app';
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -658,7 +658,7 @@ export default ProjectsSection;
 - 4 services, 27 tech skills, complete profile data
 
 ### **Frontend Issues to Fix:**
-1. **✅ Use correct API URL**: `https://personal-portfolio-backend-ec6a.onrender.com`
+1. **✅ Use correct API URL**: `https://portfolio-backend-vxhcl34meq-el.a.run.app`
 2. **✅ Add proper error handling** and console logging
 3. **✅ Replace GitHub fetching** with curated project showcase  
 4. **✅ Add featured projects** to about page
