@@ -19,6 +19,7 @@ export default function AboutManagementPage() {
     githubUrl: '',
     linkedinUrl: '',
     twitterUrl: '',
+    availableForHire: false,
   });
 
   useEffect(() => {
@@ -41,6 +42,7 @@ export default function AboutManagementPage() {
           githubUrl: response.data.githubUrl || '',
           linkedinUrl: response.data.linkedinUrl || '',
           twitterUrl: response.data.twitterUrl || '',
+          availableForHire: response.data.availableForHire ?? false,
         });
       }
     } catch (error) {
@@ -186,7 +188,28 @@ export default function AboutManagementPage() {
             </div>
           </div>
 
-          <div className="flex justify-end pt-4 border-t border-gray-800">
+          <div className="flex items-center justify-between pt-4 border-t border-gray-800">
+            <div className="flex items-center gap-4">
+              <label className="text-gray-300 text-sm font-medium">Available for Hire</label>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, availableForHire: !formData.availableForHire })}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                  formData.availableForHire ? 'bg-green-500' : 'bg-gray-700'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    formData.availableForHire ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+              <span className={`text-sm font-medium ${
+                formData.availableForHire ? 'text-green-400' : 'text-gray-500'
+              }`}>
+                {formData.availableForHire ? 'Open to opportunities' : 'Not available'}
+              </span>
+            </div>
             <button
               type="submit"
               disabled={saving}

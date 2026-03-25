@@ -112,10 +112,12 @@ export default function AboutPage() {
                 alt={about?.fullName || 'Profile'}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute bottom-6 left-6 bg-green-500/90 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2">
-                <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-                <span className="text-white text-sm font-medium">AVAILABLE FOR HIRE</span>
-              </div>
+              {about?.availableForHire && (
+                <div className="absolute bottom-6 left-6 bg-green-500/90 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2">
+                  <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                  <span className="text-white text-sm font-medium">AVAILABLE FOR HIRE</span>
+                </div>
+              )}
             </div>
             <div className="mt-4 text-center">
               <p className="text-gray-300 text-lg font-medium">

@@ -16,12 +16,20 @@ async function apiRequest<T>(
   options?: RequestInit
 ): Promise<ApiResponse<T>> {
   try {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(options?.headers as Record<string, string>),
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_BASE}${endpoint}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
       ...options,
+      headers,
     });
 
     const data = await response.json();
@@ -122,11 +130,11 @@ export const educationAPI = {
     method: 'POST',
     body: JSON.stringify(data),
   }),
-  update: (id: string, data: any) => apiRequest(`/api/admin/content/education/${id}`, {
+  update: (id: string, data: any) => apiRequest(`/admin/content/education/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   }),
-  delete: (id: string) => apiRequest(`/api/admin/content/education/${id}`, {
+  delete: (id: string) => apiRequest(`/admin/content/education/${id}`, {
     method: 'DELETE',
   }),
 };
