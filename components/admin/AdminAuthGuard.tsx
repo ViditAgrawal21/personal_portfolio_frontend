@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdminStore } from '@/store/admin-store';
-import { authHelpers } from '@/lib/adminApi';
 
 interface AdminAuthGuardProps {
   children: React.ReactNode;
@@ -13,26 +12,21 @@ export function AdminAuthGuard({ children }: AdminAuthGuardProps) {
   const router = useRouter();
   const { isAuthenticated, token, checkAuth, logout } = useAdminStore();
   const [isChecking, setIsChecking] = useState(true);
+  const hasVerified = useRef(false);
 
   useEffect(() => {
-    const verifyAuth = async () => {
-      console.log('Verifying admin authentication...');
+    // Only run once per true mount — not on every tab switch or re-render
+    if (hasVerified.current) return;
+    hasVerified.current = true;
 
+    const verifyAuth = async () => {
       try {
         setIsChecking(true);
 
         const isValid = checkAuth();
-        const hasToken = authHelpers.isAuthenticated();
+        const currentToken = token || localStorage.getItem('adminToken');
 
-        console.log('Auth Status:', {
-          storeAuth: isAuthenticated,
-          hasToken,
-          isValid,
-          tokenExists: !!token,
-        });
-
-        if (!isValid || !hasToken || !token) {
-          console.log('Authentication failed - redirecting to login');
+        if (!isValid || !currentToken) {
           logout();
           router.replace('/admin/login');
           return;
@@ -41,35 +35,35 @@ export function AdminAuthGuard({ children }: AdminAuthGuardProps) {
         try {
           const response = await fetch('/api/proxy/admin/test-auth', {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${currentToken}`,
               'Content-Type': 'application/json',
             },
           });
 
-          if (!response.ok) {
-            throw new Error('Token validation failed');
+          // Only logout on explicit auth rejection — NOT on network errors
+          if (response.status === 401 || response.status === 403) {
+            console.warn('Token rejected by server — logging out');
+            logout();
+            router.replace('/admin/login');
+            return;
           }
 
-          console.log('Token is valid');
-        } catch (tokenError) {
-          console.error('Token validation failed:', tokenError);
-          logout();
-          router.replace('/admin/login');
-          return;
+          // Any other non-OK status (500, network timeout, etc.) — keep the user logged in
+          // The token is still in localStorage and will be retried on the next action
+        } catch {
+          // Network error (offline, backend down, CORS) — do NOT logout
+          // Token is still valid in localStorage; user should not be kicked out
+          console.warn('Auth check network error — keeping session alive');
         }
-
-        console.log('Authentication verified successfully');
       } catch (error) {
-        console.error('Authentication verification error:', error);
-        logout();
-        router.replace('/admin/login');
+        console.error('Auth guard error:', error);
       } finally {
         setIsChecking(false);
       }
     };
 
     verifyAuth();
-  }, [isAuthenticated, token, checkAuth, logout, router]);
+  }, []);
 
   if (isChecking) {
     return (
@@ -82,7 +76,8 @@ export function AdminAuthGuard({ children }: AdminAuthGuardProps) {
     );
   }
 
-  if (!isAuthenticated || !token || !authHelpers.isAuthenticated()) {
+  const storedToken = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
+  if (!isAuthenticated || (!token && !storedToken)) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-center">
@@ -107,13 +102,9 @@ export function useAuthStatus() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const verify = () => {
-      const valid = checkAuth() && authHelpers.isAuthenticated() && !!token;
-      setIsValid(valid);
-      setIsLoading(false);
-    };
-
-    verify();
+    const valid = checkAuth() && !!token;
+    setIsValid(valid);
+    setIsLoading(false);
   }, [isAuthenticated, token, checkAuth]);
 
   return { isValid, isLoading, isAuthenticated: isValid };

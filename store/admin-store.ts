@@ -68,53 +68,27 @@ export const useAdminStore = create<AdminState>()(
       
       checkAuth: () => {
         const state = get();
-        const hasStateToken = !!state.token;
-        const hasStorageToken = typeof window !== 'undefined' ? 
-          !!(localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken')) : false;
-        
-        const isAuthenticated = hasStateToken && hasStorageToken;
-        
-        console.log('🔍 Auth Check:', {
-          hasStateToken,
-          hasStorageToken,
-          isAuthenticated,
-          stateAuth: state.isAuthenticated
-        });
-        
-        // If tokens don't match, update state
-        if (state.isAuthenticated !== isAuthenticated) {
-          if (!isAuthenticated) {
-            // Clear everything if not authenticated
-            get().logout();
-          } else if (hasStorageToken && !hasStateToken && typeof window !== 'undefined') {
-            // Restore from storage if possible
-            const email = localStorage.getItem('adminEmail') || sessionStorage.getItem('adminEmail');
-            const role = localStorage.getItem('adminRole') || sessionStorage.getItem('adminRole');
-            const token = localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken');
-            
-            if (email && role && token) {
-              set({
-                isAuthenticated: true,
-                adminEmail: email,
-                adminRole: role,
-                token
-              });
-              return true;
-            }
+
+        // If state already has a token, trust it — don't wipe on tab switch
+        if (state.token && state.isAuthenticated) return true;
+
+        // Try to restore from localStorage (persists across tabs and sessions)
+        if (typeof window !== 'undefined') {
+          const token = localStorage.getItem('adminToken');
+          const email = localStorage.getItem('adminEmail');
+          const role = localStorage.getItem('adminRole');
+
+          if (token && email && role) {
+            set({ isAuthenticated: true, adminEmail: email, adminRole: role, token });
+            return true;
           }
         }
-        
-        return isAuthenticated;
+
+        return false;
       },
     }),
     {
       name: 'admin-storage',
-      onRehydrateStorage: () => (state) => {
-        // Check authentication status after rehydration
-        if (state) {
-          state.checkAuth();
-        }
-      },
     }
   )
 );
