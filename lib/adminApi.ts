@@ -10,13 +10,46 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
+// Authentication helper functions
+export const authHelpers = {
+  getToken: (): string | null => {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken');
+  },
+  
+  setToken: (token: string): void => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('adminToken', token);
+    sessionStorage.setItem('adminToken', token);
+  },
+  
+  clearToken: (): void => {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem('adminToken');
+    sessionStorage.removeItem('adminToken');
+    localStorage.removeItem('adminEmail');
+    localStorage.removeItem('adminRole');
+  },
+  
+  isAuthenticated: (): boolean => {
+    return !!authHelpers.getToken();
+  }
+};
+
 // Generic API request helper
 async function apiRequest<T>(
   endpoint: string,
   options?: RequestInit
 ): Promise<ApiResponse<T>> {
   try {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
+    const token = authHelpers.getToken();
+    
+    // Debug logging for authentication
+    console.log('🔐 Admin API Request:', {
+      endpoint,
+      hasToken: !!token,
+      tokenPreview: token ? `${token.substring(0, 10)}...` : 'null'
+    });
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -25,22 +58,60 @@ async function apiRequest<T>(
 
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      console.warn('⚠️ No authentication token found for admin request to:', endpoint);
+      throw new Error('Authentication required. Please log in again.');
     }
 
-    const response = await fetch(`${API_BASE}${endpoint}`, {
+    // Add cache busting to admin requests
+    const separator = endpoint.includes('?') ? '&' : '?';
+    const cacheBuster = `_t=${Date.now()}&_r=${Math.random()}`;
+    const fullEndpoint = `${endpoint}${separator}${cacheBuster}`;
+
+    const response = await fetch(`${API_BASE}${fullEndpoint}`, {
       ...options,
       headers,
+      cache: 'no-store',
     });
 
-    const data = await response.json();
+    let data;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      console.error('Failed to parse response as JSON:', parseError);
+      throw new Error('Invalid response from server');
+    }
     
     if (!response.ok) {
-      throw new Error(data.error || `HTTP error! status: ${response.status}`);
+      console.error('❌ API Error Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        data,
+        endpoint: fullEndpoint
+      });
+      
+      // Handle authentication errors
+      if (response.status === 401 || response.status === 403) {
+        console.error('❌ Authentication failed - clearing tokens');
+        authHelpers.clearToken();
+        // Redirect to login if we're on an admin page
+        if (typeof window !== 'undefined' && window.location.pathname.includes('/admin')) {
+          window.location.href = '/admin/login';
+        }
+        throw new Error('Authentication failed. Please log in again.');
+      }
+      
+      throw new Error(data.error || data.message || `HTTP error! status: ${response.status}`);
     }
 
+    console.log('✅ Admin API Success:', endpoint);
     return data;
   } catch (error) {
-    console.error('API request failed:', error);
+    console.error('💥 Admin API Request Failed:', {
+      endpoint,
+      error: error instanceof Error ? error.message : error,
+      hasToken: authHelpers.isAuthenticated()
+    });
     throw error;
   }
 }

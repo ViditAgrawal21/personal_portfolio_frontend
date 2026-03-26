@@ -123,7 +123,13 @@ export function useTechStack(category?: string) {
       try {
         setLoading(true);
         const data = await getTechStack(category);
-        setTechStack(data);
+        // Sort by displayOrder to ensure proper ordering for dashboard
+        const sortedData = data.sort((a, b) => {
+          const orderA = a.displayOrder ?? 999;
+          const orderB = b.displayOrder ?? 999;
+          return orderA - orderB;
+        });
+        setTechStack(sortedData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch tech stack');
       } finally {

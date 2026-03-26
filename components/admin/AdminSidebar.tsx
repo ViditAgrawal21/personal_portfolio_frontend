@@ -6,12 +6,17 @@ import { useAdminStore } from '@/store/admin-store';
 import { useUIStore } from '@/store/ui-store';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { useStats } from '@/hooks/useStats';
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const { logout } = useAdminStore();
   const { adminSidebarOpen, toggleAdminSidebar } = useUIStore();
   const router = useRouter();
+  const { data: stats } = useStats();
+
+  const inquiryCount = stats?.inquiries?.total;
+  const hireRequestCount = stats?.hireRequests?.total;
 
   const menuItems = [
     {
@@ -31,7 +36,7 @@ export function AdminSidebar() {
       ),
       label: 'Inquiries',
       href: '/admin/inquiries',
-      badge: '32',
+      badge: inquiryCount != null ? String(inquiryCount) : undefined,
     },
     {
       icon: (
@@ -41,6 +46,7 @@ export function AdminSidebar() {
       ),
       label: 'Hire Requests',
       href: '/admin/hire-requests',
+      badge: hireRequestCount != null ? String(hireRequestCount) : undefined,
     },
     {
       label: 'CONTENT',

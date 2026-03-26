@@ -2,14 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import { AdminAuthGuard } from '@/components/admin/AdminAuthGuard';
 import { aboutAPI } from '@/lib/adminApi';
 import { motion } from 'framer-motion';
+import { useCacheBuster } from '@/hooks/useCacheBuster';
+import { useAdminStore } from '@/store/admin-store';
 
-export default function AboutManagementPage() {
+function AboutManagementContent() {
+  const { clearAllCaches } = useCacheBuster();
+  const { isAuthenticated, token, checkAuth } = useAdminStore();
   const [about, setAbout] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [savingAvailability, setSavingAvailability] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     fullName: '',
     title: '',
@@ -17,24 +22,36 @@ export default function AboutManagementPage() {
     email: '',
     phone: '',
     location: '',
+    resumeUrl: '',
     githubUrl: '',
     linkedinUrl: '',
     twitterUrl: '',
-  });
-  const [availabilityData, setAvailabilityData] = useState({
-    isAvailable: false,
+    profileImageUrl: '',
+    yearsOfExp: 0,
     availabilityStatus: '',
     hourlyRate: '',
+    isAvailable: false,
   });
 
   useEffect(() => {
-    fetchAbout();
-  }, []);
+    // Verify authentication before making API calls
+    if (checkAuth() && token) {
+      fetchAbout();
+    } else {
+      setError('Authentication required');
+      setLoading(false);
+    }
+  }, [checkAuth, token]);
 
   const fetchAbout = async () => {
     try {
       setLoading(true);
+      setError(null);
+      
+      console.log('🔄 Fetching about data...');
       const response = await aboutAPI.get();
+      console.log('✅ About data fetched:', response);
+      
       setAbout(response.data);
       if (response.data) {
         setFormData({
@@ -44,18 +61,20 @@ export default function AboutManagementPage() {
           email: response.data.email || '',
           phone: response.data.phone || '',
           location: response.data.location || '',
+          resumeUrl: response.data.resumeUrl || '',
           githubUrl: response.data.githubUrl || '',
           linkedinUrl: response.data.linkedinUrl || '',
           twitterUrl: response.data.twitterUrl || '',
-        });
-        setAvailabilityData({
-          isAvailable: response.data.isAvailable ?? false,
+          profileImageUrl: response.data.profileImageUrl || '',
+          yearsOfExp: response.data.yearsOfExp || 0,
           availabilityStatus: response.data.availabilityStatus || '',
           hourlyRate: response.data.hourlyRate || '',
+          isAvailable: response.data.isAvailable ?? false,
         });
       }
     } catch (error) {
-      console.error('Failed to fetch about:', error);
+      console.error('❌ Failed to fetch about:', error);
+      setError(error instanceof Error ? error.message : 'Failed to fetch about data');
     } finally {
       setLoading(false);
     }
@@ -63,34 +82,44 @@ export default function AboutManagementPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Verify authentication before saving
+    if (!checkAuth() || !token) {
+      setError('Authentication expired. Please log in again.');
+      return;
+    }
+    
     setSaving(true);
+    setError(null);
+    
     try {
+      console.log('💾 Saving about data...', formData);
       await aboutAPI.update(formData);
+      
+      // Clear cache so changes appear immediately on public site
+      await clearAllCaches();
+      
+      console.log('✅ About data saved successfully');
       alert('About section updated successfully!');
       await fetchAbout();
     } catch (error) {
-      console.error('Failed to save:', error);
-      alert('Failed to save changes');
+      console.error('❌ Failed to save about data:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save changes';
+      setError(errorMessage);
+      alert(`Failed to save changes: ${errorMessage}`);
     } finally {
       setSaving(false);
     }
   };
 
-  const handleSaveAvailability = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSavingAvailability(true);
-    try {
-      // Merge all profile fields + availability fields into one PUT call
-      // (the backend has no separate availability endpoint)
-      await aboutAPI.updateAvailability({ ...formData, ...availabilityData });
-      alert('Availability updated successfully!');
-      await fetchAbout();
-    } catch (error) {
-      console.error('Failed to save availability:', error);
-      alert('Failed to save availability');
-    } finally {
-      setSavingAvailability(false);
-    }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked 
+              : type === 'number' ? parseInt(value) || 0 
+              : value
+    }));
   };
 
   if (loading) {
@@ -98,208 +127,363 @@ export default function AboutManagementPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading...</p>
+          <p className="text-gray-400">Loading about data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a]">
+        <AdminHeader 
+          title="About Management" 
+          description="Manage your personal profile information"
+        />
+        <div className="p-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-red-900/20 border border-red-600/30 rounded-lg p-6 text-center">
+              <div className="text-red-400 text-lg mb-4">❌ Error</div>
+              <p className="text-red-300 mb-4">{error}</p>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={fetchAbout}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors"
+                >
+                  Retry
+                </button>
+                <button
+                  onClick={() => window.location.href = '/admin/login'}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors"
+                >
+                  Login Again
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#0a0a0a]">
       <AdminHeader 
-        title="About Section" 
-        description="Manage your personal information"
+        title="About Management" 
+        description="Manage your personal profile information"
       />
-
-      <div className="p-8 max-w-4xl mx-auto space-y-8">
-        {/* Profile Info Form */}
-        <form onSubmit={handleSave} className="bg-[#1a1625] border border-gray-800 rounded-lg p-8 space-y-6">
-          <h2 className="text-lg font-semibold text-white">Profile Information</h2>
-
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Full Name</label>
-              <input
-                type="text"
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                required
-                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Title/Role</label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                required
-                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-gray-300 text-sm font-medium mb-2">Bio</label>
-            <textarea
-              value={formData.bio}
-              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              required
-              rows={6}
-              className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Email</label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Phone</label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-gray-300 text-sm font-medium mb-2">Location</label>
-            <input
-              type="text"
-              value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-            />
-          </div>
-
-          <div className="grid grid-cols-3 gap-6">
-            <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">GitHub URL</label>
-              <input
-                type="url"
-                value={formData.githubUrl}
-                onChange={(e) => setFormData({ ...formData, githubUrl: e.target.value })}
-                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">LinkedIn URL</label>
-              <input
-                type="url"
-                value={formData.linkedinUrl}
-                onChange={(e) => setFormData({ ...formData, linkedinUrl: e.target.value })}
-                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Twitter URL</label>
-              <input
-                type="url"
-                value={formData.twitterUrl}
-                onChange={(e) => setFormData({ ...formData, twitterUrl: e.target.value })}
-                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end pt-4 border-t border-gray-800">
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors disabled:opacity-50"
+      <div className="p-8">
+        <div className="max-w-4xl mx-auto">
+          <form onSubmit={handleSave} className="space-y-8">
+            
+            {/* Basic Information Section */}
+            <motion.section 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-[#111] border border-purple-600/20 rounded-lg p-6"
             >
-              {saving ? 'Saving...' : 'Save Profile'}
-            </button>
-          </div>
-        </form>
+              <h3 className="text-xl font-bold text-white mb-6 flex items-center">
+                👤 Basic Information
+              </h3>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-gray-300 text-sm font-medium mb-2">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                    placeholder="Enter your full name"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-300 text-sm font-medium mb-2">
+                    Professional Title
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleChange}
+                    className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                    placeholder="e.g., Full Stack Developer"
+                  />
+                </div>
+                
+                <div className="md:col-span-2">
+                  <label className="block text-gray-300 text-sm font-medium mb-2">
+                    Bio / Description
+                  </label>
+                  <textarea
+                    name="bio"
+                    value={formData.bio}
+                    onChange={handleChange}
+                    rows={4}
+                    className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none resize-none"
+                    placeholder="Tell a bit about yourself and your expertise..."
+                  />
+                </div>
+                
+                <div className="md:col-span-2">
+                  <label className="block text-gray-300 text-sm font-medium mb-2">
+                    Profile Image URL
+                  </label>
+                  <input
+                    type="url"
+                    name="profileImageUrl"
+                    value={formData.profileImageUrl}
+                    onChange={handleChange}
+                    className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                    placeholder="https://example.com/your-photo.jpg"
+                  />
+                </div>
+              </div>
+            </motion.section>
 
-        {/* Availability Settings Card */}
-        <form onSubmit={handleSaveAvailability} className="bg-[#1a1625] border border-gray-800 rounded-lg p-8 space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-white">Availability Status</h2>
-              <p className="text-sm text-gray-500 mt-1">Controls the hiring badge on your public profile</p>
-            </div>
-            <div className={`px-3 py-1 rounded-full text-xs font-medium border ${
-              availabilityData.isAvailable
-                ? 'bg-green-500/10 text-green-400 border-green-500/30'
-                : 'bg-gray-700/50 text-gray-500 border-gray-700'
-            }`}>
-              {availabilityData.isAvailable ? 'Available' : 'Unavailable'}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <label className="text-gray-300 text-sm font-medium">Available for Hire</label>
-            <button
-              type="button"
-              onClick={() => setAvailabilityData({ ...availabilityData, isAvailable: !availabilityData.isAvailable })}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                availabilityData.isAvailable ? 'bg-green-500' : 'bg-gray-700'
-              }`}
+            {/* Contact Information */}
+            <motion.section 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-[#111] border border-purple-600/20 rounded-lg p-6"
             >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  availabilityData.isAvailable ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-            <span className={`text-sm font-medium ${
-              availabilityData.isAvailable ? 'text-green-400' : 'text-gray-500'
-            }`}>
-              {availabilityData.isAvailable ? 'Open to opportunities' : 'Not available'}
-            </span>
-          </div>
+              <h3 className="text-xl font-bold text-white mb-6 flex items-center">
+                📧 Contact Information  
+              </h3>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-gray-300 text-sm font-medium mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                    placeholder="your@email.com"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-300 text-sm font-medium mb-2">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                    placeholder="+1 (555) 123-4567"
+                  />
+                </div>
+                
+                <div className="md:col-span-2">
+                  <label className="block text-gray-300 text-sm font-medium mb-2">
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleChange}
+                    className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                    placeholder="City, Country"
+                  />
+                </div>
+              </div>
+            </motion.section>
 
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Status Message</label>
-              <input
-                type="text"
-                value={availabilityData.availabilityStatus}
-                onChange={(e) => setAvailabilityData({ ...availabilityData, availabilityStatus: e.target.value })}
-                placeholder="e.g., Available for projects, Booking for Q2 2026"
-                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500 placeholder-gray-600"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Hourly Rate</label>
-              <input
-                type="text"
-                value={availabilityData.hourlyRate}
-                onChange={(e) => setAvailabilityData({ ...availabilityData, hourlyRate: e.target.value })}
-                placeholder="e.g., $25-50/hour"
-                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500 placeholder-gray-600"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end pt-4 border-t border-gray-800">
-            <button
-              type="submit"
-              disabled={savingAvailability}
-              className="px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors disabled:opacity-50"
+            {/* Professional Links */}
+            <motion.section 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-[#111] border border-purple-600/20 rounded-lg p-6"
             >
-              {savingAvailability ? 'Saving...' : 'Save Availability'}
-            </button>
-          </div>
-        </form>
+              <h3 className="text-xl font-bold text-white mb-6 flex items-center">
+                🔗 Professional Links
+              </h3>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-gray-300 text-sm font-medium mb-2">
+                    GitHub URL
+                  </label>
+                  <input
+                    type="url"
+                    name="githubUrl"
+                    value={formData.githubUrl}
+                    onChange={handleChange}
+                    className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                    placeholder="https://github.com/yourusername"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-300 text-sm font-medium mb-2">
+                    LinkedIn URL
+                  </label>
+                  <input
+                    type="url"
+                    name="linkedinUrl"
+                    value={formData.linkedinUrl}
+                    onChange={handleChange}
+                    className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                    placeholder="https://linkedin.com/in/yourusername"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-300 text-sm font-medium mb-2">
+                    Twitter/X URL
+                  </label>
+                  <input
+                    type="url"
+                    name="twitterUrl"
+                    value={formData.twitterUrl}
+                    onChange={handleChange}
+                    className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                    placeholder="https://twitter.com/yourusername"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-300 text-sm font-medium mb-2">
+                    Resume URL
+                  </label>
+                  <input
+                    type="url"
+                    name="resumeUrl"
+                    value={formData.resumeUrl}
+                    onChange={handleChange}
+                    className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                    placeholder="https://example.com/your-resume.pdf"
+                  />
+                </div>
+              </div>
+            </motion.section>
+
+            {/* Availability & Pricing */}
+            <motion.section 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-[#111] border border-purple-600/20 rounded-lg p-6"
+            >
+              <h3 className="text-xl font-bold text-white mb-6 flex items-center">
+                💼 Availability & Pricing
+              </h3>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-gray-300 text-sm font-medium mb-2">
+                    Years of Experience
+                  </label>
+                  <input
+                    type="number"
+                    name="yearsOfExp"
+                    value={formData.yearsOfExp}
+                    onChange={handleChange}
+                    min="0"
+                    max="50"
+                    className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-300 text-sm font-medium mb-2">
+                    Hourly Rate
+                  </label>
+                  <input
+                    type="text"
+                    name="hourlyRate"
+                    value={formData.hourlyRate}
+                    onChange={handleChange}
+                    className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                    placeholder="$50/hour"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-300 text-sm font-medium mb-2">
+                    Availability Status
+                  </label>
+                  <select
+                    name="availabilityStatus"
+                    value={formData.availabilityStatus}
+                    onChange={handleChange}
+                    className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                  >
+                    <option value="">Select availability</option>
+                    <option value="Available for hire">Available for hire</option>
+                    <option value="Available for freelance">Available for freelance</option>
+                    <option value="Open to opportunities">Open to opportunities</option>
+                    <option value="Busy">Busy</option>
+                    <option value="Not available">Not available</option>
+                  </select>
+                </div>
+                
+                <div className="flex items-center">
+                  <label className="flex items-center space-x-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="isAvailable"
+                      checked={formData.isAvailable}
+                      onChange={handleChange}
+                      className="w-5 h-5 text-purple-600 bg-[#1a1a1a] border-gray-600 rounded focus:ring-purple-500"
+                    />
+                    <span className="text-gray-300">Currently Available</span>
+                  </label>
+                </div>
+              </div>
+            </motion.section>
+
+            {/* Save Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="flex justify-end pt-6"
+            >
+              <button
+                type="submit"
+                disabled={saving}
+                className="px-8 py-3 bg-purple-600 hover:bg-purple-500 disabled:bg-purple-600/50 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+              >
+                {saving ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    💾 Save Changes
+                  </>
+                )}
+              </button>
+            </motion.div>
+            
+          </form>
+        </div>
       </div>
     </div>
+  );
+}
+
+// Main component with authentication guard
+export default function AboutManagementPage() {
+  return (
+    <AdminAuthGuard>
+      <AboutManagementContent />
+    </AdminAuthGuard>
   );
 }

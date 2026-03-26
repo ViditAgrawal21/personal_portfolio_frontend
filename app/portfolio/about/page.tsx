@@ -80,14 +80,21 @@ export default function AboutPage() {
               transition={{ delay: 0.4 }}
               className="flex gap-4"
             >
-              <a
-                href={about?.resumeUrl || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors font-medium"
-              >
-                Download CV
-              </a>
+              {about?.resumeUrl ? (
+                <a
+                  href={about.resumeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download
+                  className="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors font-medium"
+                >
+                  Download CV
+                </a>
+              ) : (
+                <span className="px-6 py-3 bg-purple-600/40 text-white/50 rounded-lg font-medium cursor-not-allowed">
+                  Download CV
+                </span>
+              )}
               <a
                 href={about?.githubUrl || '#'}
                 target="_blank"

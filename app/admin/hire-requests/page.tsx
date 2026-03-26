@@ -7,9 +7,11 @@ import { useStats } from '@/hooks/useStats';
 import { HireStatus, HireRequest } from '@/types/api';
 import { motion } from 'framer-motion';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import { AdminAuthGuard } from '@/components/admin/AdminAuthGuard';
 import { API_ENDPOINTS } from '@/config/api';
+import { getInitials, formatDate } from '@/lib/utils';
 
-export default function HireRequestsPage() {
+function HireRequestsContent() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | HireStatus>('all');
@@ -47,7 +49,11 @@ export default function HireRequestsPage() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `hire-requests-${new Date().toISOString().split('T')[0]}.csv`;
+      const today = new Date();
+      const dateStr = today.getFullYear() + '-' + 
+        String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+        String(today.getDate()).padStart(2, '0');
+      link.download = `hire-requests-${dateStr}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -108,9 +114,9 @@ export default function HireRequestsPage() {
   };
 
   const stats = {
-    totalActiveLeads: statsData?.hireRequests?.total || data?.pagination.total || 0,
-    openRequests: statsData?.hireRequests?.byStatus?.NEW || data?.data.filter(r => r.status === 'NEW' || r.status === 'REVIEWING').length || 0,
-    closureRate: statsData?.hireRequests?.total ? 
+    totalActiveLeads: statsData?.hireRequests?.total ?? data?.pagination?.total ?? 0,
+    openRequests: (statsData?.hireRequests?.byStatus?.NEW ?? 0) + (statsData?.hireRequests?.byStatus?.REVIEWING ?? 0),
+    closureRate: statsData?.hireRequests?.total && statsData?.hireRequests?.byStatus?.ACCEPTED ? 
       ((statsData.hireRequests.byStatus.ACCEPTED / statsData.hireRequests.total) * 100).toFixed(1) : 
       '0.0',
   };
@@ -126,13 +132,14 @@ export default function HireRequestsPage() {
     await updateStatus.mutateAsync({ id, payload: { status: newStatus } });
   };
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-  };
-
   const filteredData = data?.data.filter(req => {
     if (selectedFilter !== 'all' && req.status !== selectedFilter) return false;
-    if (searchQuery && !req.candidateName.toLowerCase().includes(searchQuery.toLowerCase()) && !req.companyName.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      return req.candidateName?.toLowerCase().includes(query) || 
+             req.companyName?.toLowerCase().includes(query) ||
+             req.email?.toLowerCase().includes(query);
+    }
     return true;
   });
 
@@ -300,7 +307,7 @@ export default function HireRequestsPage() {
                             </div>
                             <div>
                               <p className="text-white font-medium">{request.companyName}</p>
-                              <p className="text-gray-400 text-sm">{request.email.split('@')[1]}</p>
+                              <p className="text-gray-400 text-sm">{request.email?.includes('@') ? request.email.split('@')[1] : 'No domain'}</p>
                             </div>
                           </div>
                         </td>
@@ -592,6 +599,15 @@ export default function HireRequestsPage() {
         </motion.div>
       )}
     </div>
+  );
+}
+
+// Main component with authentication guard
+export default function HireRequestsPage() {
+  return (
+    <AdminAuthGuard>
+      <HireRequestsContent />
+    </AdminAuthGuard>
   );
 }
 

@@ -2,66 +2,173 @@
 
 import { useState, useEffect } from 'react';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import { AdminAuthGuard } from '@/components/admin/AdminAuthGuard';
 import { techStackAPI } from '@/lib/adminApi';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Reorder } from 'framer-motion';
+import { useCacheBuster } from '@/hooks/useCacheBuster';
+import { useAdminStore } from '@/store/admin-store';
 import type { TechStack } from '@/types/portfolio';
 
-export default function TechStackManagementPage() {
-  const [techStack, setTechStack] = useState<TechStack[]>([]);
+interface TechStackWithOrder extends TechStack {
+  displayOrder: number;
+}
+
+function TechStackManagementContent() {
+  const { clearAllCaches } = useCacheBuster();
+  const { isAuthenticated, token, checkAuth } = useAdminStore();
+  const [techStack, setTechStack] = useState<TechStackWithOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [editingTech, setEditingTech] = useState<TechStack | null>(null);
+  const [editingTech, setEditingTech] = useState<TechStackWithOrder | null>(null);
+  const [draggedItem, setDraggedItem] = useState<TechStackWithOrder | null>(null);
 
   useEffect(() => {
-    fetchTechStack();
-  }, []);
+    // Verify authentication before making API calls
+    if (checkAuth() && token) {
+      fetchTechStack();
+    } else {
+      setError('Authentication required');
+      setLoading(false);
+    }
+  }, [checkAuth, token]);
 
   const fetchTechStack = async () => {
     try {
       setLoading(true);
+      setError(null);
+      
+      console.log('ðŸ”„ Fetching tech stack data...');
       const response = await techStackAPI.getAll();
-      setTechStack(response.data);
+      console.log('âœ… Tech stack data fetched:', response);
+      
+      // Sort by displayOrder if available, otherwise by creation order
+      const sortedTechStack = (response.data || [])
+        .map((tech: TechStack, index: number) => ({
+          ...tech,
+          displayOrder: tech.displayOrder ?? index
+        }))
+        .sort((a: TechStackWithOrder, b: TechStackWithOrder) => a.displayOrder - b.displayOrder);
+      
+      setTechStack(sortedTechStack);
     } catch (error) {
-      console.error('Failed to fetch tech stack:', error);
+      console.error('âŒ Failed to fetch tech stack:', error);
+      setError(error instanceof Error ? error.message : 'Failed to fetch tech stack data');
     } finally {
       setLoading(false);
     }
   };
 
   const handleCreate = () => {
+    // Verify authentication before allowing creation
+    if (!checkAuth() || !token) {
+      setError('Authentication expired. Please log in again.');
+      return;
+    }
+    
     setEditingTech(null);
     setShowModal(true);
   };
 
-  const handleEdit = (tech: TechStack) => {
+  const handleEdit = (tech: TechStackWithOrder) => {
+    // Verify authentication before allowing edit
+    if (!checkAuth() || !token) {
+      setError('Authentication expired. Please log in again.');
+      return;
+    }
+    
     setEditingTech(tech);
     setShowModal(true);
   };
 
   const handleDelete = async (id: string) => {
+    // Verify authentication before allowing delete
+    if (!checkAuth() || !token) {
+      setError('Authentication expired. Please log in again.');
+      return;
+    }
+    
     if (!confirm('Are you sure you want to delete this technology?')) return;
     
     try {
+      setError(null);
+      
+      console.log('ðŸ—‘ï¸ Deleting technology...', id);
       await techStackAPI.delete(id);
+      await clearAllCaches(); // Clear cache so changes reflect immediately
+      
+      console.log('âœ… Technology deleted successfully');
       await fetchTechStack();
     } catch (error) {
-      console.error('Failed to delete technology:', error);
-      alert('Failed to delete technology');
+      console.error('âŒ Failed to delete technology:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete technology';
+      setError(errorMessage);
+      alert(`Failed to delete technology: ${errorMessage}`);
     }
   };
 
   const handleSave = async (data: any) => {
+    // Verify authentication before saving
+    if (!checkAuth() || !token) {
+      setError('Authentication expired. Please log in again.');
+      return;
+    }
+    
     try {
+      setError(null);
+      
+      console.log('ðŸ’¾ Saving technology...', data);
+      
       if (editingTech) {
         await techStackAPI.update(editingTech.id, data);
       } else {
         await techStackAPI.create(data);
       }
+      await clearAllCaches(); // Clear cache so changes reflect immediately
+      
+      console.log('âœ… Technology saved successfully');
       await fetchTechStack();
       setShowModal(false);
     } catch (error) {
-      console.error('Failed to save technology:', error);
-      alert('Failed to save technology');
+      console.error('âŒ Failed to save technology:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save technology';
+      setError(errorMessage);
+      alert(`Failed to save technology: ${errorMessage}`);
+    }
+  };
+
+  const handleReorder = (newOrder: TechStackWithOrder[]) => {
+    setTechStack(newOrder);
+  };
+
+  const saveOrder = async () => {
+    // Verify authentication before saving order
+    if (!checkAuth() || !token) {
+      setError('Authentication expired. Please log in again.');
+      return;
+    }
+    
+    try {
+      setError(null);
+      
+      console.log('ðŸ’¾ Saving tech stack order...');
+      
+      // Update the displayOrder for each tech item
+      const updatePromises = techStack.map((tech, index) => 
+        techStackAPI.update(tech.id, { ...tech, displayOrder: index })
+      );
+      
+      await Promise.all(updatePromises);
+      await clearAllCaches(); // Clear cache so changes reflect immediately
+      
+      console.log('âœ… Tech stack order saved successfully');
+      alert('Order saved successfully!');
+      await fetchTechStack();
+    } catch (error) {
+      console.error('âŒ Failed to save tech stack order:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save order';
+      setError(errorMessage);
+      alert(`Failed to save order: ${errorMessage}`);
     }
   };
 
@@ -76,21 +183,100 @@ export default function TechStackManagementPage() {
     return colors[category] || 'bg-gray-600/20 text-gray-400 border-gray-600/30';
   };
 
+  // Handle native HTML5 drag and drop as fallback
+  const handleDragStart = (e: React.DragEvent, tech: TechStackWithOrder) => {
+    setDraggedItem(tech);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, targetTech: TechStackWithOrder) => {
+    e.preventDefault();
+    if (!draggedItem || draggedItem.id === targetTech.id) return;
+
+    const newTechStack = [...techStack];
+    const draggedIndex = newTechStack.findIndex(tech => tech.id === draggedItem.id);
+    const targetIndex = newTechStack.findIndex(tech => tech.id === targetTech.id);
+
+    // Remove dragged item and insert at target position
+    const [removed] = newTechStack.splice(draggedIndex, 1);
+    newTechStack.splice(targetIndex, 0, removed);
+
+    setTechStack(newTechStack);
+    setDraggedItem(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading tech stack...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a]">
+        <AdminHeader 
+          title="Tech Stack Management" 
+          description="Manage the order and visibility of your tech stack"
+        />
+        <div className="p-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-red-900/20 border border-red-600/30 rounded-lg p-6 text-center">
+              <div className="text-red-400 text-lg mb-4">âŒ Error</div>
+              <p className="text-red-300 mb-4">{error}</p>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={fetchTechStack}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors"
+                >
+                  Retry
+                </button>
+                <button
+                  onClick={() => window.location.href = '/admin/login'}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors"
+                >
+                  Login Again
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#0a0a0a]">
       <AdminHeader 
         title="Tech Stack Management" 
-        description="Manage your technologies and skills"
+        description="Manage your technologies and skills. First 3 items appear on about dashboard."
         actions={
-          <button
-            onClick={handleCreate}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Add Technology
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={saveOrder}
+              className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors flex items-center gap-2"
+            >
+              ðŸ’¾ Save Order
+            </button>
+            <button
+              onClick={handleCreate}
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add Technology
+            </button>
+          </div>
         }
       />
 
@@ -98,241 +284,330 @@ export default function TechStackManagementPage() {
         {loading ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-400">Loading tech stack...</p>
+            <p className="text-gray-400">Loading...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {techStack.map((tech) => (
-              <motion.div
-                key={tech.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-[#1a1625] border border-gray-800 rounded-lg p-6 hover:border-purple-600/50 transition-all"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <span className={`px-3 py-1 text-xs rounded-full border ${getCategoryColor(tech.category)}`}>
-                    {tech.category}
-                  </span>
-                  {tech.icon && (
-                    tech.icon.startsWith('http') || tech.icon.startsWith('/') ? (
-                      <img
-                        src={tech.icon}
-                        alt={tech.name}
-                        width={28}
-                        height={28}
-                        className="w-7 h-7 object-contain"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                      />
-                    ) : (
-                      <span className="text-2xl">{tech.icon}</span>
-                    )
-                  )}
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">{tech.name}</h3>
-                <div className="mb-4">
-                  <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-gray-400">Proficiency</span>
-                    <span className="text-purple-400 font-bold">{tech.proficiency}%</span>
+          <div className="max-w-6xl mx-auto">
+            {/* Top 3 Preview */}
+            <div className="mb-8 p-6 bg-[#1a1a1a] rounded-lg border-l-4 border-purple-600">
+              <h3 className="text-lg font-semibold text-white mb-4">
+                ðŸŽ¯ About Dashboard Preview (Top 3)
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {techStack.slice(0, 3).map((tech, index) => (
+                  <div key={tech.id} className="bg-[#2a2a2a] p-4 rounded-lg">
+                    <div className="text-center">
+                      <div className="text-2xl mb-2">{tech.icon}</div>
+                      <h4 className="text-white font-medium">{tech.name}</h4>
+                      <div className={`inline-block px-2 py-1 rounded text-xs mt-2 ${getCategoryColor(tech.category)}`}>
+                        #{index + 1} â€¢ {tech.category}
+                      </div>
+                    </div>
                   </div>
-                  <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-gradient-to-r from-purple-600 to-pink-600 rounded-full"
-                      style={{ width: `${tech.proficiency}%` }}
-                    />
-                  </div>
+                ))}
+              </div>
+              {techStack.length < 3 && (
+                <p className="text-gray-400 mt-4 text-sm">
+                  Add more technologies to fill all 3 spots on the about dashboard
+                </p>
+              )}
+            </div>
+
+            {/* Drag Instructions */}
+            <div className="mb-6 p-4 bg-blue-900/20 border border-blue-600/30 rounded-lg">
+              <div className="flex items-start gap-3">
+                <div className="text-blue-400 mt-1">â„¹ï¸</div>
+                <div>
+                  <h4 className="text-blue-300 font-medium mb-1">Drag & Drop Instructions</h4>
+                  <p className="text-blue-200 text-sm">
+                    Drag technologies to reorder them. The first three will appear on your about dashboard. 
+                    Click "Save Order" when finished.
+                  </p>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleEdit(tech)}
-                    className="flex-1 px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 rounded transition-colors text-sm"
+              </div>
+            </div>
+
+            {/* Draggable Tech Stack List */}
+            <Reorder.Group 
+              axis="y" 
+              values={techStack} 
+              onReorder={handleReorder}
+              className="space-y-4"
+            >
+              <AnimatePresence>
+                {techStack.map((tech, index) => (
+                  <Reorder.Item 
+                    key={tech.id} 
+                    value={tech}
+                    className={`bg-[#1a1a1a] rounded-lg p-6 cursor-move hover:bg-[#2a2a2a] transition-colors border-l-4 ${
+                      index < 3 ? 'border-purple-600' : 'border-gray-600'
+                    }`}
+                    drag
+                    dragMomentum={false}
+                    whileDrag={{ scale: 1.02, zIndex: 10 }}
+                    layout
                   >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(tech.id)}
-                    className="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded transition-colors text-sm"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </motion.div>
-            ))}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        {/* Drag Handle */}
+                        <div className="text-gray-500 cursor-grab active:cursor-grabbing">
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+                          </svg>
+                        </div>
+
+                        {/* Position indicator */}
+                        <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
+                          index < 3 ? 'bg-purple-600 text-white' : 'bg-gray-600 text-gray-300'
+                        }`}>
+                          {index + 1}
+                        </div>
+
+                        {/* Tech Info */}
+                        <div className="flex items-center gap-4">
+                          <span className="text-2xl">{tech.icon}</span>
+                          <div>
+                            <h3 className="text-white font-semibold text-lg">{tech.name}</h3>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className={`px-2 py-1 rounded-full text-xs border ${getCategoryColor(tech.category)}`}>
+                                {tech.category}
+                              </span>
+                              <span className="text-gray-400 text-sm">
+                                {tech.proficiency}% proficient
+                              </span>
+                              {index < 3 && (
+                                <span className="px-2 py-1 bg-purple-600/20 text-purple-300 rounded-full text-xs">
+                                  Dashboard
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleEdit(tech)}
+                          className="px-3 py-2 bg-blue-600/20 text-blue-400 rounded hover:bg-blue-600/30 transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(tech.id)}
+                          className="px-3 py-2 bg-red-600/20 text-red-400 rounded hover:bg-red-600/30 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="mt-4">
+                      <div className="w-full bg-gray-700 rounded-full h-2">
+                        <div 
+                          className="bg-purple-600 h-2 rounded-full transition-all" 
+                          style={{ width: `${tech.proficiency}%` }}
+                        />
+                      </div>
+                    </div>
+                  </Reorder.Item>
+                ))}
+              </AnimatePresence>
+            </Reorder.Group>
+
+            {techStack.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-400 mb-4">No technologies added yet</p>
+                <button
+                  onClick={handleCreate}
+                  className="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors"
+                >
+                  Add Your First Technology
+                </button>
+              </div>
+            )}
           </div>
         )}
 
-        {!loading && techStack.length === 0 && (
-          <div className="text-center py-12">
-            <svg className="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-            </svg>
-            <p className="text-gray-400">No technologies yet. Add your first technology!</p>
-          </div>
-        )}
+        {/* Modal */}
+        <TechModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          onSave={handleSave}
+          editingTech={editingTech}
+        />
       </div>
-
-      <AnimatePresence>
-        {showModal && (
-          <TechModal
-            tech={editingTech}
-            onClose={() => setShowModal(false)}
-            onSave={handleSave}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }
 
+// Tech Stack Modal Component
 function TechModal({ 
-  tech, 
+  isOpen, 
   onClose, 
-  onSave 
+  onSave, 
+  editingTech 
 }: { 
-  tech: TechStack | null;
-  onClose: () => void;
-  onSave: (data: any) => Promise<void>;
+  isOpen: boolean; 
+  onClose: () => void; 
+  onSave: (data: any) => void; 
+  editingTech: TechStackWithOrder | null; 
 }) {
   const [formData, setFormData] = useState({
-    name: tech?.name || '',
-    category: tech?.category || 'Frontend',
-    proficiency: tech?.proficiency || 50,
-    icon: tech?.icon || '',
-
+    name: '',
+    category: 'Frontend',
+    proficiency: 50,
+    icon: 'âš¡',
+    description: '',
   });
-  const [saving, setSaving] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    
-    try {
-      await onSave(formData);
-    } catch (error) {
-      // Error handled in parent
-    } finally {
-      setSaving(false);
+  useEffect(() => {
+    if (editingTech) {
+      setFormData({
+        name: editingTech.name || '',
+        category: editingTech.category || 'Frontend',
+        proficiency: editingTech.proficiency || 50,
+        icon: editingTech.icon || 'âš¡',
+        description: editingTech.description || '',
+      });
+    } else {
+      setFormData({
+        name: '',
+        category: 'Frontend',
+        proficiency: 50,
+        icon: 'âš¡',
+        description: '',
+      });
     }
+  }, [editingTech, isOpen]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(formData);
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'number' ? parseInt(value) || 0 : value
+    }));
+  };
+
+  if (!isOpen) return null;
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        onClick={(e) => e.stopPropagation()}
-        className="bg-[#1a1625] border border-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-[#1a1a1a] rounded-lg p-6 max-w-md w-full"
       >
-        <div className="sticky top-0 bg-[#1a1625] border-b border-gray-800 p-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-white">
-            {tech ? 'Edit Technology' : 'New Technology'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+        <h2 className="text-xl font-semibold text-white mb-6">
+          {editingTech ? 'Edit Technology' : 'Add Technology'}
+        </h2>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Technology Name</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Category</label>
-              <select
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-              >
-                <option value="Frontend">Frontend</option>
-                <option value="Backend">Backend</option>
-                <option value="Database">Database</option>
-                <option value="DevOps">DevOps</option>
-                <option value="Tools">Tools</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Name *
+            </label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="w-full p-3 bg-[#2a2a2a] border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+              required
+            />
           </div>
 
           <div>
-            <label className="block text-gray-300 text-sm font-medium mb-2">
-              Proficiency Level: {formData.proficiency}%
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Category *
+            </label>
+            <select
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              className="w-full p-3 bg-[#2a2a2a] border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+            >
+              <option value="Frontend">Frontend</option>
+              <option value="Backend">Backend</option>
+              <option value="Database">Database</option>
+              <option value="DevOps">DevOps</option>
+              <option value="Tools">Tools</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Icon/Emoji
+            </label>
+            <input
+              type="text"
+              name="icon"
+              value={formData.icon}
+              onChange={handleChange}
+              className="w-full p-3 bg-[#2a2a2a] border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Proficiency ({formData.proficiency}%)
             </label>
             <input
               type="range"
+              name="proficiency"
+              value={formData.proficiency}
+              onChange={handleChange}
               min="0"
               max="100"
-              value={formData.proficiency}
-              onChange={(e) => setFormData({ ...formData, proficiency: parseInt(e.target.value) })}
-              className="w-full h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+              className="w-full"
             />
-            <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>Beginner</span>
-              <span>Intermediate</span>
-              <span>Expert</span>
-            </div>
           </div>
 
           <div>
-            <label className="block text-gray-300 text-sm font-medium mb-2">Icon URL (optional)</label>
-            <div className="flex items-center gap-3">
-              <input
-                type="text"
-                value={formData.icon}
-                onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                placeholder="https://..."
-                className="flex-1 px-4 py-2 bg-[#0f1419] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-              />
-              {formData.icon && (formData.icon.startsWith('http') || formData.icon.startsWith('/')) && (
-                <img
-                  src={formData.icon}
-                  alt="icon preview"
-                  width={32}
-                  height={32}
-                  className="w-8 h-8 object-contain rounded"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                />
-              )}
-            </div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Description
+            </label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              rows={3}
+              className="w-full p-3 bg-[#2a2a2a] border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+            />
           </div>
 
-          <div className="flex gap-4 pt-4 border-t border-gray-800">
+          <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              className="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={saving}
-              className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors"
             >
-              {saving ? 'Saving...' : 'Save Technology'}
+              Save
             </button>
           </div>
         </form>
       </motion.div>
-    </motion.div>
+    </div>
+  );
+}
+
+// Main component with authentication guard
+export default function TechStackManagementPage() {
+  return (
+    <AdminAuthGuard>
+      <TechStackManagementContent />
+    </AdminAuthGuard>
   );
 }
