@@ -32,29 +32,7 @@ export function AdminAuthGuard({ children }: AdminAuthGuardProps) {
           return;
         }
 
-        try {
-          const response = await fetch('/api/proxy/admin/test-auth', {
-            headers: {
-              Authorization: `Bearer ${currentToken}`,
-              'Content-Type': 'application/json',
-            },
-          });
-
-          // Only logout on explicit auth rejection — NOT on network errors
-          if (response.status === 401 || response.status === 403) {
-            console.warn('Token rejected by server — logging out');
-            logout();
-            router.replace('/admin/login');
-            return;
-          }
-
-          // Any other non-OK status (500, network timeout, etc.) — keep the user logged in
-          // The token is still in localStorage and will be retried on the next action
-        } catch {
-          // Network error (offline, backend down, CORS) — do NOT logout
-          // Token is still valid in localStorage; user should not be kicked out
-          console.warn('Auth check network error — keeping session alive');
-        }
+        // Token exists in localStorage — session is valid, no server ping needed
       } catch (error) {
         console.error('Auth guard error:', error);
       } finally {

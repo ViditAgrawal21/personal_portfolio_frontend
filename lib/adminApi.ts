@@ -220,10 +220,13 @@ export const educationAPI = {
 // IMAGE UPLOAD API
 export const uploadImage = async (file: File): Promise<string> => {
   const formData = new FormData();
-  formData.append('image', file);
+  formData.append('file', file);
+
+  const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
 
   const response = await fetch(`${API_BASE}/admin/upload`, {
     method: 'POST',
+    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
     body: formData,
   });
 

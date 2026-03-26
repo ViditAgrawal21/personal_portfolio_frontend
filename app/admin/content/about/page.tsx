@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { AdminAuthGuard } from '@/components/admin/AdminAuthGuard';
+import { FileUpload } from '@/components/admin/FileUpload';
 import { aboutAPI } from '@/lib/adminApi';
 import { motion } from 'framer-motion';
 import { useCacheBuster } from '@/hooks/useCacheBuster';
@@ -232,15 +233,18 @@ function AboutManagementContent() {
                 
                 <div className="md:col-span-2">
                   <label className="block text-gray-300 text-sm font-medium mb-2">
-                    Profile Image URL
+                    Profile Image
                   </label>
-                  <input
-                    type="url"
-                    name="profileImageUrl"
-                    value={formData.profileImageUrl}
-                    onChange={handleChange}
-                    className="w-full p-3 bg-[#1a1a1a] border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
-                    placeholder="https://example.com/your-photo.jpg"
+                  {formData.profileImageUrl && (
+                    <img
+                      src={formData.profileImageUrl}
+                      alt="Current profile"
+                      className="w-20 h-20 rounded-full object-cover mb-3 border-2 border-purple-500/30"
+                    />
+                  )}
+                  <FileUpload
+                    onUpload={(url) => setFormData(prev => ({ ...prev, profileImageUrl: url }))}
+                    accept="image/*"
                   />
                 </div>
               </div>

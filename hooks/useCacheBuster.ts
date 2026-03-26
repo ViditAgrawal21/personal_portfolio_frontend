@@ -16,10 +16,23 @@ export function useCacheBuster() {
       queryClient.clear();
       
       if (typeof window !== 'undefined') {
-        // Clear ALL localStorage (not just specific keys)
+        // Preserve admin auth keys — clearing them would log the admin out
+        const adminKeysToPreserve: Record<string, string | null> = {
+          adminToken: localStorage.getItem('adminToken'),
+          adminEmail: localStorage.getItem('adminEmail'),
+          adminRole: localStorage.getItem('adminRole'),
+          'admin-storage': localStorage.getItem('admin-storage'),
+        };
+
+        // Clear ALL localStorage
         localStorage.clear();
+
+        // Restore admin auth keys
+        Object.entries(adminKeysToPreserve).forEach(([key, value]) => {
+          if (value !== null) localStorage.setItem(key, value);
+        });
         
-        // Clear sessionStorage
+        // Clear sessionStorage (no auth keys stored there in primary flow)
         sessionStorage.clear();
         
         // Clear IndexedDB if available

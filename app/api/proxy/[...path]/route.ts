@@ -20,22 +20,29 @@ async function proxyRequest(request: NextRequest, method: string): Promise<NextR
 
     console.log(`🔄 Proxying ${method} request to: ${finalUrl}`);
 
-    const requestHeaders: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
+    const requestHeaders: HeadersInit = {};
 
     const authHeader = request.headers.get('authorization');
     if (authHeader) {
       requestHeaders['Authorization'] = authHeader;
     }
 
-    let body: string | undefined;
+    const contentType = request.headers.get('content-type') || '';
+    const isMultipart = contentType.includes('multipart/form-data');
+
+    let body: BodyInit | undefined;
     if (['POST', 'PUT', 'PATCH'].includes(method)) {
-      try {
-        const bodyJson = await request.json();
-        body = JSON.stringify(bodyJson);
-      } catch {
-        body = undefined;
+      if (isMultipart) {
+        // Pass form data through directly — do NOT set Content-Type so the browser boundary is preserved
+        body = await request.formData();
+      } else {
+        requestHeaders['Content-Type'] = 'application/json';
+        try {
+          const bodyJson = await request.json();
+          body = JSON.stringify(bodyJson);
+        } catch {
+          body = undefined;
+        }
       }
     }
 
