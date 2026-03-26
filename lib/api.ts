@@ -13,15 +13,23 @@ import { getApiBaseUrl } from '@/config/api';
 // Get API base URL for production
 export const API_BASE = getApiBaseUrl();
 
-// Generic API fetch helper with error handling
+// Generic API fetch helper with no caching and cache busting
 async function fetchAPI<T>(endpoint: string): Promise<T> {
   try {
-    const response = await fetch(`${API_BASE}${endpoint}`, {
+    // Add cache busting parameters to ensure fresh data
+    const separator = endpoint.includes('?') ? '&' : '?';
+    const cacheBuster = `_t=${Date.now()}&_r=${Math.random()}`;
+    const fullEndpoint = `${endpoint}${separator}${cacheBuster}`;
+    
+    const response = await fetch(`${API_BASE}${fullEndpoint}`, {
       headers: {
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
       },
-      // Add cache revalidation for Next.js
-      next: { revalidate: 60 }, // Revalidate every 60 seconds
+      // Disable all Next.js caching
+      cache: 'no-store',
     });
     
     if (!response.ok) {

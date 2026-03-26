@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { DevCacheResetButton } from "@/components/ui/CacheControlPanel";
 
 const jetbrainsMono = JetBrains_Mono({ 
   subsets: ["latin"],
@@ -95,6 +96,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <head>
+        {/* Aggressive cache prevention meta tags */}
+        <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta httpEquiv="Pragma" content="no-cache" />
+        <meta httpEquiv="Expires" content="0" />
+        <meta name="robots" content="noarchive" />
+        
         {/* Preconnect to external domains */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -114,7 +121,80 @@ export default function RootLayout({
         <meta name="msapplication-config" content="/browserconfig.xml" />
       </head>
       <body suppressHydrationWarning className={`${jetbrainsMono.variable} ${inter.variable} font-mono antialiased`}>
+        {/* Cache clearing script - runs on every page load */}
+        <script 
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Aggressive cache clearing on page load
+              (function() {
+                try {
+                  // Clear localStorage completely
+                  if (typeof localStorage !== 'undefined') {
+                    localStorage.clear();
+                  }
+                  
+                  // Clear sessionStorage completely
+                  if (typeof sessionStorage !== 'undefined') {
+                    sessionStorage.clear();
+                  }
+                  
+                  // Clear any service worker caches
+                  if ('caches' in window) {
+                    caches.keys().then(function(names) {
+                      names.forEach(function(name) {
+                        caches.delete(name);
+                        console.log('Deleted cache:', name);
+                      });
+                    });
+                  }
+                  
+                  // Force disable browser cache for this session
+                  if ('navigator' in window && 'serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                      registrations.forEach(function(registration) {
+                        registration.unregister();
+                        console.log('Unregistered service worker:', registration.scope);
+                      });
+                    });
+                  }
+                  
+                  // Add cache-busting to all fetch requests
+                  if ('fetch' in window) {
+                    const originalFetch = window.fetch;
+                    window.fetch = function(...args) {
+                      const [url, options = {}] = args;
+                      const enhancedOptions = {
+                        ...options,
+                        cache: 'no-store',
+                        headers: {
+                          ...options.headers,
+                          'Cache-Control': 'no-cache, no-store, must-revalidate',
+                          'Pragma': 'no-cache',
+                          'Expires': '0'
+                        }
+                      };
+                      
+                      // Add cache busters to URL
+                      let enhancedUrl = url;
+                      if (typeof url === 'string') {
+                        const separator = url.includes('?') ? '&' : '?';
+                        enhancedUrl = url + separator + '_t=' + Date.now() + '&_r=' + Math.random();
+                      }
+                      
+                      return originalFetch.call(this, enhancedUrl, enhancedOptions);
+                    };
+                  }
+                  
+                  console.log('🚀 Aggressive cache prevention activated');
+                } catch (e) {
+                  console.log('Cache clearing error:', e);
+                }
+              })();
+            `
+          }}
+        />
         <Providers>
+          <DevCacheResetButton />
           {children}
         </Providers>
       </body>

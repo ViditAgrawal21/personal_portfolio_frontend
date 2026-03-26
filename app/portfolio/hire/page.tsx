@@ -7,7 +7,7 @@ import { useAbout } from '@/hooks/usePortfolio';
 export default function HirePage() {
   const { about } = useAbout();
   const [formData, setFormData] = useState({
-    candidateName: '',
+    Name: '',
     email: '',
     companyName: '',
     roleType: 'Full-Stack Developer',
@@ -24,15 +24,20 @@ export default function HirePage() {
     setSubmitStatus('idle');
 
     try {
-      const response = await fetch('/api/proxy/hire/request', {
+      const response = await fetch(`/api/proxy/hire/request?_t=${Date.now()}&_r=${Math.random()}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        },
+        cache: 'no-store',
         body: JSON.stringify(formData),
       });
 
       if (response.ok) {
         setSubmitStatus('success');
-        setFormData({ candidateName: '', email: '', companyName: '', roleType: 'Full-Stack Developer', salaryOffer: '', location: '', message: '' });
+        setFormData({ Name: '', email: '', companyName: '', roleType: 'Full-Stack Developer', salaryOffer: '', location: '', message: '' });
       } else {
         setSubmitStatus('error');
       }
@@ -92,8 +97,8 @@ export default function HirePage() {
                     required
                     minLength={2}
                     maxLength={255}
-                    value={formData.candidateName}
-                    onChange={(e) => setFormData({ ...formData, candidateName: e.target.value })}
+                    value={formData.Name}
+                    onChange={(e) => setFormData({ ...formData, Name: e.target.value })}
                     className="w-full px-4 py-3 bg-[#0a0a0a] border border-gray-700 rounded text-gray-300 focus:outline-none focus:border-pink-500 transition-colors"
                     placeholder="Your full name"
                   />

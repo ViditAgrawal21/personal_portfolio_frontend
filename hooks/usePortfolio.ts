@@ -12,9 +12,9 @@ import {
   getAbout
 } from '@/lib/api';
 
-// Cache duration in milliseconds (5 minutes)
-const CACHE_DURATION = 5 * 60 * 1000;
-// Bump this version whenever API field shapes change — old cache is auto-dropped
+// Caching disabled - always fetch fresh data
+const CACHE_DURATION = 0; // No caching
+// Cache version for cleanup
 const CACHE_VERSION = 'v3';
 const CACHE_KEY = `portfolio_cache_${CACHE_VERSION}`;
 
@@ -34,35 +34,21 @@ export function usePortfolio() {
       try {
         setLoading(true);
         
-        // Check cache first (client-side only)
+        // Clear any existing cache on every load
         if (typeof window !== 'undefined') {
-          const cached = localStorage.getItem(CACHE_KEY);
-          if (cached) {
-            try {
-              const { data: cachedData, timestamp }: CacheData = JSON.parse(cached);
-              if (Date.now() - timestamp < CACHE_DURATION) {
-                setData(cachedData);
-                setLoading(false);
-                return;
-              }
-            } catch (e) {
-              // Invalid cache, continue to fetch
-              localStorage.removeItem(CACHE_KEY);
+          // Clear all portfolio-related cache
+          Object.keys(localStorage).forEach(key => {
+            if (key.includes('portfolio_cache')) {
+              localStorage.removeItem(key);
             }
-          }
+          });
         }
 
-        // Fetch fresh data
+        // Always fetch fresh data with cache busting
         const portfolioData = await getAllContent();
         setData(portfolioData);
         
-        // Update cache (client-side only)
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(CACHE_KEY, JSON.stringify({
-            data: portfolioData,
-            timestamp: Date.now(),
-          }));
-        }
+        // No caching - always fetch fresh data
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch portfolio data');
       } finally {
