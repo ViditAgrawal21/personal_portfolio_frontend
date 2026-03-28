@@ -55,12 +55,7 @@ export default function AdminLayout({
       </div>
       <AdminSidebar />
       <motion.main
-        animate={{ 
-          marginLeft: 0,
-          width: `calc(100% - ${adminSidebarOpen ? '256px' : '64px'})`
-        }}
-        transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="flex-1 overflow-auto"
+        className="flex-1 overflow-auto w-full relative z-0"
       >
         {children}
       </motion.main>

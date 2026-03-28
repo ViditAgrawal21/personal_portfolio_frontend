@@ -5,8 +5,9 @@ import { usePathname } from 'next/navigation';
 import { useAdminStore } from '@/store/admin-store';
 import { useUIStore } from '@/store/ui-store';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useStats } from '@/hooks/useStats';
+import { useState, useEffect } from 'react';
 
 export function AdminSidebar() {
   const pathname = usePathname();
@@ -18,6 +19,15 @@ export function AdminSidebar() {
   const inquiryCount = stats?.inquiries?.total;
   const hireRequestCount = stats?.hireRequests?.total;
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const menuItems = [
     {
       icon: (
@@ -27,6 +37,15 @@ export function AdminSidebar() {
       ),
       label: 'Dashboard',
       href: '/admin/dashboard',
+    },
+    {
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        </svg>
+      ),
+      label: 'Environment',
+      href: '/admin/environment',
     },
     {
       icon: (
@@ -114,11 +133,26 @@ export function AdminSidebar() {
   };
 
   return (
-    <motion.aside
-      animate={{ width: adminSidebarOpen ? 256 : 64 }}
-      transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="bg-[#0a0510]/80 backdrop-blur-xl border-r border-purple-900/30 flex flex-col h-screen relative z-20 shadow-[4px_0_24px_rgba(0,0,0,0.5)]"
-    >
+    <>
+      <AnimatePresence>
+        {isMobile && adminSidebarOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+            onClick={toggleAdminSidebar}
+          />
+        )}
+      </AnimatePresence>
+      <motion.aside
+        initial={false}
+        animate={{ width: isMobile ? (adminSidebarOpen ? 280 : 0) : (adminSidebarOpen ? 256 : 64) }}
+        transition={{ duration: 0.3, ease: 'easeInOut' }}
+        className={`bg-[#0a0510]/80 backdrop-blur-xl border-r border-purple-900/30 flex flex-col h-screen z-50 shadow-[4px_0_24px_rgba(0,0,0,0.5)] ${
+          isMobile ? 'fixed inset-y-0 left-0 overflow-hidden' : 'relative shrink-0'
+        }`}
+      >
       {/* Toggle Button */}
       <button
         onClick={toggleAdminSidebar}
@@ -262,5 +296,6 @@ export function AdminSidebar() {
         </div>
       </div>
     </motion.aside>
+    </>
   );
 }

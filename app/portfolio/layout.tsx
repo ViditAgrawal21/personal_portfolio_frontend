@@ -68,34 +68,31 @@ export default function PortfolioLayout({
         <IDETransition onComplete={() => setShowTransition(false)} />
       )}
 
-      <div className="flex h-screen bg-[#0d0d0d] text-gray-200 overflow-hidden font-sans selection:bg-purple-500/30">
+      <div className="flex h-screen overflow-hidden selection:bg-[var(--accent-color)] selection:text-white transition-colors duration-[var(--motion-duration)]">
         {/* Sidebar */}
         <IDESidebar />
 
         {/* Main content area */}
         <motion.div
-          animate={{ 
-            width: `calc(100% - ${portfolioSidebarOpen ? '256px' : '64px'})`
-          }}
-          transition={{ duration: 0.3, ease: 'easeInOut' }}
-          className="flex-1 flex flex-col"
+          className="flex-1 flex flex-col w-full"
         >
           {/* Top menu bar */}
           <motion.div
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="h-14 bg-[#0d0d0d]/80 backdrop-blur-md border-b border-gray-800/60 flex items-center justify-between px-4 z-20"
+            className="h-14 backdrop-blur-md border-b border-gray-800/60 flex items-center justify-between px-4 z-20 transition-colors duration-[var(--motion-duration)]"
+            style={{ backgroundColor: 'color-mix(in srgb, var(--bg-color) 80%, transparent)' }}
           >
             {/* Left: Logo and menus */}
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 group cursor-pointer">
-                <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-blue-600 rounded-md flex items-center justify-center shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-all">
+                <div className="w-7 h-7 flex-shrink-0 rounded-md flex items-center justify-center shadow-lg transition-all" style={{ background: 'var(--accent-color)', boxShadow: '0 0 10px var(--accent-color)' }}>
                   <span className="text-white text-xs font-bold leading-none">V</span>
                 </div>
-                <span className="text-sm font-semibold tracking-wide text-gray-200 group-hover:text-white transition-colors">DEV_OS v3.0</span>
+                <span className="text-sm font-semibold tracking-wide text-gray-200 group-hover:text-white transition-colors hidden sm:block whitespace-nowrap">DEV_OS v3.0</span>
               </div>
-              <div className="flex items-center gap-4 text-sm ml-4">
+              <div className="hidden md:flex items-center gap-4 text-sm ml-4 whitespace-nowrap">
                 <span className="text-gray-400 hover:text-white cursor-pointer">File</span>
                 <span className="text-gray-400 hover:text-white cursor-pointer">Edit</span>
                 <span className="text-gray-400 hover:text-white cursor-pointer">Selection</span>
@@ -113,14 +110,15 @@ export default function PortfolioLayout({
                 <input
                   type="text"
                   placeholder="Search files or commands (⌘+K)"
-                  className="w-full pl-10 pr-4 py-1.5 bg-gray-900/50 border border-gray-800 rounded-md text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
+                  className="w-full pl-10 pr-4 py-1.5 border border-gray-800 rounded-md text-sm placeholder-gray-600 focus:outline-none transition-all"
+                  style={{ backgroundColor: 'color-mix(in srgb, var(--bg-color) 50%, transparent)', color: 'var(--text-color)' }}
                 />
               </div>
             </div>
 
             {/* Right: Stats and profile */}
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3 text-xs">
+              <div className="hidden lg:flex items-center gap-3 text-xs">
                 <div>
                   <span className="text-gray-600">UPTIME</span>
                   <span className="text-gray-400 ml-1">14hrs</span>
@@ -137,7 +135,8 @@ export default function PortfolioLayout({
                     sessionStorage.setItem('fromIntro', 'true');
                     window.location.href = '/';
                   }}
-                  className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center hover:bg-purple-500 transition-all hover:scale-105 shadow-lg shadow-purple-600/30"
+                  className="w-10 h-10 rounded-lg flex items-center justify-center transition-all hover:scale-105 shadow-lg"
+                  style={{ backgroundColor: 'var(--accent-color)' }}
                   title="Replay intro animation"
                 >
                   <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -148,7 +147,8 @@ export default function PortfolioLayout({
                 {/* Profile Image - Admin login */}
                 <Link
                   href="/admin/login"
-                  className="w-10 h-10 rounded-full overflow-hidden border-2 border-purple-500 hover:border-purple-400 transition-all hover:scale-105 shadow-lg"
+                  className="w-10 h-10 rounded-full overflow-hidden border-2 transition-all hover:scale-105 shadow-lg"
+                  style={{ borderColor: 'var(--accent-color)' }}
                   title="Admin login"
                 >
                   <img 
@@ -169,24 +169,25 @@ export default function PortfolioLayout({
             className="flex-1 flex flex-col overflow-hidden relative"
           >
             {/* Subtle background glow for the editor area */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-purple-500/5 blur-[100px] pointer-events-none rounded-full"></div>
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 blur-[100px] pointer-events-none rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--accent-color) 10%, transparent)' }}></div>
 
             {/* Tab bar */}
-            <div className="flex items-center bg-[#0d0d0d] border-b border-gray-800/60 z-10">
+            <div className="flex items-center border-b border-gray-800/60 z-10 transition-colors duration-[var(--motion-duration)] overflow-x-auto hide-scrollbar whitespace-nowrap shrink-0" style={{ backgroundColor: 'color-mix(in srgb, var(--bg-color) 95%, black)' }}>
               {openTabs.map((tab) => {
                 const isActive = pathname?.includes(tab);
                 return (
                   <Link
                     key={tab}
                     href={`/portfolio/${tab}`}
-                    className={`flex items-center gap-2 px-4 py-2.5 border-r border-gray-800/60 group hover:bg-[#151515] transition-colors relative ${
+                    className={`flex items-center gap-2 px-4 py-2.5 border-r border-gray-800/60 group hover:bg-[#151515] transition-colors relative flex-shrink-0 ${
                       isActive ? 'bg-[#151515] text-gray-200' : 'text-gray-500 hover:text-gray-300'
                     }`}
                   >
                     {isActive && (
                       <motion.div
                         layoutId="activeTabIndicator"
-                        className="absolute top-0 left-0 w-full h-[2px] bg-purple-500"
+                        className="absolute top-0 left-0 w-full h-[2px]"
+                        style={{ backgroundColor: 'var(--accent-color)' }}
                         initial={false}
                         transition={{ duration: 0.3 }}
                       />
@@ -210,7 +211,7 @@ export default function PortfolioLayout({
                   </Link>
                 );
               })}
-              <div className="flex-1 flex items-center justify-end px-4">
+              <div className="flex-1 flex items-center justify-end px-4 min-w-[50px]">
                 <button className="text-gray-600 hover:text-gray-400">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
@@ -219,7 +220,7 @@ export default function PortfolioLayout({
               </div>
             </div>
 
-            <div className="flex-1 overflow-auto bg-[#0a0a0a] relative z-0 hide-scrollbar">
+            <div className="flex-1 overflow-auto relative z-0 hide-scrollbar transition-colors duration-[var(--motion-duration)]" style={{ backgroundColor: 'var(--bg-color)', color: 'var(--text-color)' }}>
               {children}
             </div>
           </motion.div>
@@ -234,7 +235,8 @@ export default function PortfolioLayout({
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.5 }}
-            className="h-6 bg-purple-600 flex items-center justify-between px-3 text-xs text-white"
+            className="h-6 flex items-center justify-between px-3 text-xs text-white transition-colors duration-[var(--motion-duration)]"
+            style={{ backgroundColor: 'color-mix(in srgb, var(--accent-color) 80%, black)' }}
           >
             <div className="flex items-center gap-4">
               <span className="font-semibold">next</span>

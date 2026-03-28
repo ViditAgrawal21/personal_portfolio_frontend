@@ -151,13 +151,13 @@ export default function AboutPage() {
 
           <div className="bg-[#1a1625] border border-gray-800 rounded-xl p-6 text-center hover:border-purple-600/50 transition-all">
             <div className="text-5xl mb-3">🚀</div>
-            <div className="text-3xl font-bold text-white mb-2">25+</div>
+            <div className="text-3xl font-bold text-white mb-2">30+</div>
             <div className="text-sm text-gray-400 uppercase tracking-wider">Deployments</div>
           </div>
 
           <div className="bg-[#1a1625] border border-gray-800 rounded-xl p-6 text-center hover:border-purple-600/50 transition-all">
             <div className="text-5xl mb-3">💼</div>
-            <div className="text-3xl font-bold text-white mb-2">{projects?.length || 0}+</div>
+            <div className="text-3xl font-bold text-white mb-2">30+</div>
             <div className="text-sm text-gray-400 uppercase tracking-wider">Projects</div>
           </div>
 

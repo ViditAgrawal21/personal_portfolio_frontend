@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import { useUIStore } from '@/store/ui-store';
 
 const fileTree = [
@@ -24,26 +24,59 @@ export function IDESidebar() {
   const pathname = usePathname();
   const [expanded, setExpanded] = useState(true);
   const { portfolioSidebarOpen, togglePortfolioSidebar } = useUIStore();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile(); // Check on mount
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   return (
-    <motion.aside
-      animate={{ 
-        width: portfolioSidebarOpen ? 256 : 64,
-        x: 0,
-        opacity: 1
-      }}
-      initial={{ x: -300, opacity: 0 }}
-      transition={{ 
-        duration: portfolioSidebarOpen ? 0.3 : 0.3, 
-        ease: 'easeInOut',
-        delay: 0.2
-      }}
-      className="bg-[#0a0a0a] border-r border-gray-800/60 flex flex-col h-screen relative z-10 shadow-[4px_0_24px_rgba(0,0,0,0.5)]"
-    >
+    <>
+      <AnimatePresence>
+        {isMobile && portfolioSidebarOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+            onClick={togglePortfolioSidebar}
+          />
+        )}
+      </AnimatePresence>
+
+      <motion.aside
+        initial={false}
+        animate={{ 
+          width: isMobile ? (portfolioSidebarOpen ? 280 : 0) : (portfolioSidebarOpen ? 256 : 64),
+        }}
+        transition={{ 
+          duration: 0.3, 
+          ease: 'easeInOut',
+        }}
+        className={`border-r border-gray-800/60 flex flex-col h-screen z-50 shadow-[4px_0_24px_rgba(0,0,0,0.5)] transition-colors ${
+          isMobile ? 'fixed inset-y-0 left-0 overflow-hidden' : 'relative shrink-0'
+        }`}
+        style={{ backgroundColor: 'color-mix(in srgb, var(--bg-color) 90%, black)' }}
+      >
       {/* Toggle Button */}
       <button
         onClick={togglePortfolioSidebar}
-        className="absolute -right-3 top-3 w-6 h-6 bg-[#0d0d0d] border border-gray-800/60 rounded-full flex items-center justify-center text-gray-500 hover:text-white hover:bg-purple-600 hover:border-purple-500 transition-all z-20 shadow-lg"
+        className="absolute -right-3 top-3 w-6 h-6 border rounded-full flex items-center justify-center text-gray-500 hover:text-white transition-all z-20 shadow-lg"
+        style={{ 
+          backgroundColor: 'color-mix(in srgb, var(--bg-color) 95%, black)',
+          borderColor: 'color-mix(in srgb, var(--accent-color) 30%, gray)'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'var(--accent-color)';
+          e.currentTarget.style.borderColor = 'var(--accent-color)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--bg-color) 95%, black)';
+          e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--accent-color) 30%, gray)';
+        }}
       >
         <motion.svg
           animate={{ rotate: portfolioSidebarOpen ? 0 : 180 }}
@@ -58,7 +91,7 @@ export function IDESidebar() {
       </button>
 
       {/* Explorer header */}
-      <div className="px-4 py-3 border-b border-gray-800/60 flex items-center justify-between bg-[#0d0d0d]/40">
+      <div className="px-4 py-3 border-b border-gray-800/60 flex items-center justify-between" style={{ backgroundColor: 'color-mix(in srgb, var(--bg-color) 80%, black)' }}>
         <motion.span
           animate={{ opacity: portfolioSidebarOpen ? 1 : 0 }}
           transition={{ duration: 0.3, delay: portfolioSidebarOpen ? 0.1 : 0 }}
@@ -124,9 +157,14 @@ export function IDESidebar() {
                           href={file.path}
                           className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-all ${
                             isActive
-                              ? 'bg-purple-500/10 text-white border border-purple-500/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]'
+                              ? 'text-white border'
                               : 'text-gray-400 border border-transparent hover:bg-white/5 hover:text-gray-200'
                           }`}
+                          style={isActive ? {
+                            backgroundColor: 'color-mix(in srgb, var(--accent-color) 15%, transparent)',
+                            borderColor: 'color-mix(in srgb, var(--accent-color) 30%, transparent)',
+                            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)'
+                          } : {}}
                         >
                           <span>{file.icon}</span>
                           <span className={file.color}>{file.name}</span>
@@ -148,9 +186,13 @@ export function IDESidebar() {
                       href={file.path}
                       className={`flex items-center justify-center w-12 h-8 rounded-md transition-all ${
                         isActive
-                          ? 'bg-purple-500/20 text-white border border-purple-500/30'
+                          ? 'text-white border border-solid'
                           : 'text-gray-500 hover:bg-white/5 hover:text-gray-200'
                       }`}
+                      style={isActive ? {
+                        backgroundColor: 'color-mix(in srgb, var(--accent-color) 20%, transparent)',
+                        borderColor: 'color-mix(in srgb, var(--accent-color) 30%, transparent)'
+                      } : {}}
                     >
                       <span className="text-sm">{file.icon}</span>
                     </Link>
@@ -256,5 +298,6 @@ export function IDESidebar() {
         </div>
       )}
     </motion.aside>
+    </>
   );
 }

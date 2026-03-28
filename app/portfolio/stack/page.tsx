@@ -42,19 +42,19 @@ const getCategoryEmoji = (category: string) => {
   return emojis[category] || '💎';
 };
 
-// Helper to get color for category
-const getCategoryColor = (category: string) => {
-  const colors: Record<string, string> = {
-    'Frontend': 'purple',
-    'Backend': 'green',
-    'Database': 'blue',
-    'DevOps': 'orange',
-    'Tools': 'pink',
-    'Mobile': 'cyan',
-    'AI/ML': 'red',
-    'Testing': 'yellow',
+// Helper to get color classes for category to prevent Tailwind purge issues
+const getCategoryStyles = (category: string) => {
+  const styles: Record<string, { text: string; hoverBorder: string; bgFrom: string; bgTo: string }> = {
+    'Frontend': { text: 'text-purple-400', hoverBorder: 'hover:border-purple-500/50', bgFrom: '#9333ea', bgTo: '#a855f7' },
+    'Backend': { text: 'text-green-400', hoverBorder: 'hover:border-green-500/50', bgFrom: '#16a34a', bgTo: '#22c55e' },
+    'Database': { text: 'text-blue-400', hoverBorder: 'hover:border-blue-500/50', bgFrom: '#2563eb', bgTo: '#3b82f6' },
+    'DevOps': { text: 'text-orange-400', hoverBorder: 'hover:border-orange-500/50', bgFrom: '#ea580c', bgTo: '#f97316' },
+    'Tools': { text: 'text-pink-400', hoverBorder: 'hover:border-pink-500/50', bgFrom: '#db2777', bgTo: '#ec4899' },
+    'Mobile': { text: 'text-cyan-400', hoverBorder: 'hover:border-cyan-500/50', bgFrom: '#0891b2', bgTo: '#06b6d4' },
+    'AI/ML': { text: 'text-red-400', hoverBorder: 'hover:border-red-500/50', bgFrom: '#dc2626', bgTo: '#ef4444' },
+    'Testing': { text: 'text-yellow-400', hoverBorder: 'hover:border-yellow-500/50', bgFrom: '#ca8a04', bgTo: '#eab308' },
   };
-  return colors[category] || 'gray';
+  return styles[category] || { text: 'text-gray-400', hoverBorder: 'hover:border-gray-500/50', bgFrom: '#4b5563', bgTo: '#6b7280' };
 };
 
 export default function StackPage() {
@@ -114,14 +114,14 @@ export default function StackPage() {
           </div>
 
           {/* Tech grid */}
-          <div className="grid grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
             {Object.entries(groupedTech).map(([category, techs], categoryIdx) => {
-              const color = getCategoryColor(category);
+              const styles = getCategoryStyles(category);
               const emoji = getCategoryEmoji(category);
 
               return (
                 <div key={category}>
-                  <h3 className={`text-${color}-400 text-sm font-semibold mb-4 flex items-center gap-2`}>
+                  <h3 className={`${styles.text} text-sm font-semibold mb-4 flex items-center gap-2`}>
                     <span>{emoji}</span> {String(categoryIdx + 1).padStart(2, '0')}. {category.toUpperCase()}
                   </h3>
                   <div className="space-y-3">
@@ -131,7 +131,8 @@ export default function StackPage() {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.1 * categoryIdx + 0.05 * idx }}
-                        className={`bg-[#252526] border border-gray-800 rounded-lg p-4 hover:border-${color}-600/50 transition-colors`}
+                        whileHover={{ scale: 1.02, x: 5 }}
+                        className={`bg-[#252526]/80 backdrop-blur-sm border border-gray-800 rounded-lg p-4 ${styles.hoverBorder} transition-all duration-300 shadow-lg`}
                       >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
@@ -153,25 +154,24 @@ export default function StackPage() {
                             })()}
                             <span className="text-white text-sm font-medium">{sanitizeName(tech.name)}</span>
                           </div>
-                          <span className={`text-${color}-400 text-xs font-mono`}>
+                          <span className={`${styles.text} text-xs font-mono font-bold`}>
                             {tech.proficiency}%
                           </span>
                         </div>
-                        <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                        <div className="w-full h-1.5 bg-gray-900 rounded-full overflow-hidden border border-gray-800/50">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${tech.proficiency}%` }}
-                            transition={{ duration: 1, delay: 0.2 + categoryIdx * 0.1 + idx * 0.05 }}
-                            className={`h-full bg-gradient-to-r from-${color}-600 to-${color}-500`}
+                            transition={{ duration: 1, delay: 0.2 + categoryIdx * 0.1 + idx * 0.05, ease: "easeOut" }}
                             style={{
-                              background: `linear-gradient(to right, var(--tw-gradient-stops))`,
-                              '--tw-gradient-from': `rgb(var(--color-${color}-600))`,
-                              '--tw-gradient-to': `rgb(var(--color-${color}-500))`,
-                            } as React.CSSProperties}
+                              height: '100%',
+                              background: `linear-gradient(90deg, ${styles.bgFrom}, ${styles.bgTo})`,
+                              boxShadow: `0 0 10px ${styles.bgFrom}60`
+                            }}
                           />
                         </div>
                         {tech.description && !/^https?:\/\//.test(tech.description.trim()) && (
-                          <p className="text-xs text-gray-500 mt-2">{tech.description}</p>
+                          <p className="text-xs text-gray-500 mt-2 line-clamp-2">{tech.description}</p>
                         )}
                       </motion.div>
                     ))}

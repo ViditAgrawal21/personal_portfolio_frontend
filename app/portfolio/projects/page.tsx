@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useProjects } from '@/hooks/usePortfolio';
 
@@ -138,7 +138,7 @@ export default function ProjectsPage() {
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">Featured Projects</h1>
               <p className="text-gray-400 font-mono text-sm">
-                <span className="text-purple-400">const</span> <span className="text-blue-300">projects</span> = <span className="text-green-300">fetch</span>(<span className="text-orange-300">'/api/projects'</span>);
+                <span className="font-bold" style={{ color: 'var(--accent-color)' }}>const</span> <span className="text-blue-300">projects</span> = <span className="text-green-300">fetch</span>(<span className="text-orange-300">'/api/projects'</span>);
               </p>
             </div>
             <div className="flex gap-2 flex-wrap">
@@ -146,9 +146,10 @@ export default function ProjectsPage() {
                 onClick={() => setFilter('all')}
                 className={`px-3 py-1.5 rounded text-sm transition-colors ${
                   filter === 'all' 
-                    ? 'bg-purple-600 text-white' 
+                    ? 'text-white' 
                     : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                 }`}
+                style={filter === 'all' ? { backgroundColor: 'var(--accent-color)', boxShadow: '0 0 10px rgba(var(--accent-rgb), 0.3)' } : {}}
               >
                 All ({allProjects.length})
               </button>
@@ -158,9 +159,10 @@ export default function ProjectsPage() {
                   onClick={() => setFilter(cat)}
                   className={`px-3 py-1.5 rounded text-sm transition-colors ${
                     filter === cat
-                      ? 'bg-purple-600 text-white'
+                      ? 'text-white'
                       : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                   }`}
+                  style={filter === cat ? { backgroundColor: 'var(--accent-color)', boxShadow: '0 0 10px rgba(var(--accent-rgb), 0.3)' } : {}}
                 >
                   {cat} ({allProjects.filter(p => p.category === cat).length})
                 </button>
@@ -169,109 +171,118 @@ export default function ProjectsPage() {
           </div>
 
           {/* Projects grid */}
-          <div className="grid grid-cols-2 gap-6">
-            {filteredProjects.map((project, index) => (
-              <motion.div
-                key={project.id || `project-${index}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 * index }}
-                className="bg-[#0f0f0f]/80 backdrop-blur-md border border-gray-800/80 rounded-xl overflow-hidden hover:border-purple-600/50 hover:shadow-lg hover:shadow-purple-500/10 transition-all group"
-              >
-                <div className="p-6">
-                  {/* Project image/icon */}
-                  <div className={`aspect-video bg-gradient-to-br ${getCategoryGradient(project.category)} rounded-lg flex items-center justify-center mb-4 group-hover:scale-105 transition-transform overflow-hidden relative`}>
-                    {(() => {
-                      const imageUrl = getProjectImage(project.title, project.imageUrl);
-                      return imageUrl ? (
-                        <img 
-                          src={imageUrl} 
-                          alt={project.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-6xl">{getCategoryEmoji(project.category)}</span>
-                      );
-                    })()}
-                  </div>
+          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AnimatePresence mode="popLayout">
+              {filteredProjects.map((project, index) => (
+                <motion.div
+                  layout
+                  key={project.id || project.title}
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
+                  transition={{ duration: 0.4, type: 'spring', bounce: 0.3 }}
+                  whileHover={{ 
+                    y: -8, 
+                    scale: 1.02,
+                    rotateX: 2,
+                    rotateY: -2,
+                    boxShadow: '0 20px 40px -10px color-mix(in srgb, var(--accent-color) 20%, transparent)',
+                    borderColor: 'color-mix(in srgb, var(--accent-color) 40%, transparent)'
+                  }}
+                  className="backdrop-blur-md border border-gray-800/80 rounded-xl overflow-hidden group flex flex-col h-full"
+                  style={{ backgroundColor: 'color-mix(in srgb, var(--bg-color) 80%, black)', transformPerspective: 1000 }}
+                >
+                  <div className="p-6 flex flex-col flex-1">
+                    {/* Project image/icon */}
+                    <div className={`aspect-video w-full bg-gradient-to-br ${getCategoryGradient(project.category)} rounded-lg flex items-center justify-center mb-4 group-hover:scale-[1.03] transition-transform duration-500 overflow-hidden relative shadow-inner`}>
+                      {(() => {
+                        const imageUrl = getProjectImage(project.title, project.imageUrl);
+                        return imageUrl ? (
+                          <img 
+                            src={imageUrl} 
+                            alt={project.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-6xl group-hover:scale-110 transition-transform duration-500">{getCategoryEmoji(project.category)}</span>
+                        );
+                      })()}
+                      
+                      {/* Hover subtle glaze */}
+                      <div className="absolute inset-0 bg-white mix-blend-overlay opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none" />
+                    </div>
 
                     <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-xl font-bold text-white">{project.title}</h3>
-                    {project.isFeatured && (
-                      <span className="px-2 py-1 text-xs rounded-full bg-yellow-600/20 text-yellow-400">
-                        ⭐ Featured
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Description */}
-                  <p className="text-gray-400 text-sm mb-4 leading-relaxed line-clamp-3">
-                    {project.description}
-                  </p>
-
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {(project.techStack || []).slice(0, 4).map((tech, techIdx) => (
-                      <span
-                        key={tech || `tech-${techIdx}`}
-                        className="px-2 py-1 bg-gray-800 text-gray-300 text-xs rounded"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                    {(project.techStack || []).length > 4 && (
-                      <span className="px-2 py-1 bg-gray-800 text-gray-500 text-xs rounded">
-                        +{(project.techStack || []).length - 4}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Stats and actions */}
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-800">
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <h3 className="text-xl font-bold text-white group-hover:text-[var(--accent-color)] transition-colors">{project.title}</h3>
                       {project.isFeatured && (
-                        <span className="flex items-center gap-1 text-yellow-500">
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                          Featured
-                        </span>
-                      )}
-                      {project.category && (
-                        <span className="text-purple-400">
-                          {project.category}
+                        <span className="px-2 py-1 flex-shrink-0 text-[10px] uppercase tracking-wider font-bold rounded-full bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 shadow-[0_0_10px_rgba(234,179,8,0.1)]">
+                          ⭐ Featured
                         </span>
                       )}
                     </div>
-                    <div className="flex gap-2">
-                      {project.githubUrl && (
-                        <a 
-                          href={project.githubUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-gray-300 transition-colors"
+
+                    {/* Description */}
+                    <p className="text-gray-400 text-sm mb-4 leading-relaxed line-clamp-3 flex-1">
+                      {project.description}
+                    </p>
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {(project.techStack || []).slice(0, 4).map((tech, techIdx) => (
+                        <span
+                          key={tech || `tech-${techIdx}`}
+                          className="px-2 py-1 bg-[#111] border border-gray-800 text-gray-400 text-[10px] font-mono rounded"
                         >
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 0a10 10 0 00-3.16 19.49c.5.09.68-.22.68-.48v-1.7C4.73 17.89 4.14 16 4.14 16A2.65 2.65 0 003 14.46c-.91-.62.07-.61.07-.61a2.1 2.1 0 011.53 1 2.13 2.13 0 002.91.83 2.14 2.14 0 01.63-1.34c-2.22-.25-4.56-1.11-4.56-4.95a3.87 3.87 0 011-2.68 3.59 3.59 0 01.1-2.64s.84-.27 2.75 1a9.46 9.46 0 015 0c1.91-1.29 2.75-1 2.75-1a3.59 3.59 0 01.1 2.64 3.87 3.87 0 011 2.68c0 3.85-2.34 4.7-4.57 4.95a2.4 2.4 0 01.68 1.85v2.75c0 .26.18.58.69.48A10 10 0 0010 0z" />
-                          </svg>
-                        </a>
+                          {tech}
+                        </span>
+                      ))}
+                      {(project.techStack || []).length > 4 && (
+                        <span className="px-2 py-1 bg-[#111] border border-gray-800 text-gray-500 text-[10px] font-mono rounded">
+                          +{(project.techStack || []).length - 4}
+                        </span>
                       )}
-                      {project.demoUrl && (
-                        <a
-                          href={project.demoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 rounded text-xs text-white transition-colors"
-                        >
-                          View Live
-                        </a>
-                      )}
+                    </div>
+
+                    {/* Stats and actions */}
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-800 mt-auto">
+                      <div className="flex items-center gap-4 text-xs font-mono">
+                        {project.category && (
+                          <span style={{ color: 'var(--accent-color)' }} className="font-bold">
+                            {project.category}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        {project.githubUrl && (
+                          <a 
+                            href={project.githubUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 bg-[#111] border border-gray-800 hover:border-gray-500 rounded text-gray-400 hover:text-white transition-all"
+                          >
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M10 0a10 10 0 00-3.16 19.49c.5.09.68-.22.68-.48v-1.7C4.73 17.89 4.14 16 4.14 16A2.65 2.65 0 003 14.46c-.91-.62.07-.61.07-.61a2.1 2.1 0 011.53 1 2.13 2.13 0 002.91.83 2.14 2.14 0 01.63-1.34c-2.22-.25-4.56-1.11-4.56-4.95a3.87 3.87 0 011-2.68 3.59 3.59 0 01.1-2.64s.84-.27 2.75 1a9.46 9.46 0 015 0c1.91-1.29 2.75-1 2.75-1a3.59 3.59 0 01.1 2.64 3.87 3.87 0 011 2.68c0 3.85-2.34 4.7-4.57 4.95a2.4 2.4 0 01.68 1.85v2.75c0 .26.18.58.69.48A10 10 0 0010 0z" />
+                            </svg>
+                          </a>
+                        )}
+                        {project.demoUrl && (
+                          <a
+                            href={project.demoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 rounded text-xs font-bold text-white transition-all shadow-md group-hover:shadow-[0_0_15px_color-mix(in_srgb,var(--accent-color)_50%,transparent)]"
+                            style={{ backgroundColor: 'var(--accent-color)' }}
+                          >
+                            Execute
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
           
           <div className="font-mono text-sm mt-12 text-gray-500">
             <span className="ml-4">]</span><br/>

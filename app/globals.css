@@ -2,6 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global CSS overrides for Personality Modes */
+
+/* Base transitions for smooth mode switching */
+body {
+  transition: background-color var(--motion-duration) ease-out, color var(--motion-duration) ease-out;
+}
+
+/* Hacker Mode */
+.theme-hacker {
+  --bg-color: #050505;
+  --text-color: #00ff41;
+}
+.theme-hacker * {
+  text-shadow: 0 0 2px rgba(var(--accent-rgb), 0.3);
+}
+
+/* Chill Mode */
+.theme-chill {
+  --bg-color: #0f1115;
+  --text-color: #e2e8f0;
+}
+.theme-chill * {
+  border-radius: 12px !important;
+  backdrop-filter: blur(10px);
+}
+
+/* Gamer Mode */
+.theme-gamer {
+  --bg-color: #0a0a0c;
+  --text-color: #ffffff;
+}
+.theme-gamer *:hover {
+  text-shadow: 0 0 8px var(--accent-color);
+  box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.2);
+}
+
+/* Focus Mode */
+.theme-focus {
+  --bg-color: #000000;
+  --text-color: #ffffff;
+}
+.theme-focus *:not(:focus-within):not(:hover) {
+  opacity: 0.8;
+  filter: grayscale(80%);
+}
+.theme-focus *:focus-within, .theme-focus *:hover {
+  opacity: 1;
+  filter: grayscale(0%);
+}
+
+@keyframes rgb-cycle {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
 @layer base {
   html {
     /* Prevent zoom on iOS Safari */

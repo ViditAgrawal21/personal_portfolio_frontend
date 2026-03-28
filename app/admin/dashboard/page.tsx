@@ -1,242 +1,204 @@
 'use client';
 
-import { AdminHeader } from '@/components/admin/AdminHeader';
-import { StatCard } from '@/components/admin/StatCard';
+import { useState } from 'react';
 import { useStats } from '@/hooks/useStats';
 import { useInquiries } from '@/hooks/useInquiries';
 import { formatDate } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import Link from 'next/link';
+import { ControlModule } from '@/components/admin/ui/ControlModule';
+import { InteractiveDataGrid } from '@/components/admin/ui/InteractiveDataGrid';
+import { SystemButton } from '@/components/admin/ui/SystemButton';
 
 export default function AdminDashboard() {
   const { data: stats, isLoading: statsLoading } = useStats();
-  const { data: recentInquiries } = useInquiries(1, 5);
+  const { data: recentInquiries } = useInquiries(1, 10);
+  const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing'>('synced');
+
+  // Trigger sync animation when clicking actions
+  const triggerSync = () => {
+    setSyncStatus('syncing');
+    setTimeout(() => setSyncStatus('synced'), 800);
+  };
+
+  const columns = [
+    {
+      key: 'clientName',
+      header: 'Client / Contact',
+      width: 'flex-[1.5]',
+      render: (row: any) => (
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-purple-600/20 rounded-full flex items-center justify-center text-purple-400 font-bold text-xs ring-1 ring-purple-600/30">
+            {row.clientName[0]}
+          </div>
+          <div>
+            <p className="text-white font-bold">{row.clientName}</p>
+            <p className="text-gray-500 text-xs font-mono">{row.email}</p>
+          </div>
+        </div>
+      )
+    },
+    {
+      key: 'companyName',
+      header: 'Organization',
+      render: (row: any) => (
+        <span className="px-2 py-1 bg-blue-900/40 text-blue-400 rounded text-xs font-bold font-mono border border-blue-500/20">
+          {row.companyName || 'INDEPENDENT'}
+        </span>
+      )
+    },
+    {
+      key: 'budgetRange',
+      header: 'Est. Budget',
+      render: (row: any) => <span className="font-mono text-green-400 text-sm">{row.budgetRange || 'TBD'}</span>
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (row: any) => {
+        const colors = {
+          NEW: 'bg-green-900/40 text-green-400 border-green-500/30',
+          IN_PROGRESS: 'bg-yellow-900/40 text-yellow-400 border-yellow-500/30',
+          CONTACTED: 'bg-blue-900/40 text-blue-400 border-blue-500/30',
+        } as any;
+        return (
+          <span className={`px-2 py-1 flex items-center gap-1.5 w-max rounded-full text-[10px] font-bold tracking-wider uppercase border ${colors[row.status] || 'bg-purple-900/40 text-purple-400 border-purple-500/30'}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${row.status === 'NEW' ? 'animate-pulse bg-green-400' : 'bg-current'}`} />
+            {row.status}
+          </span>
+        );
+      }
+    },
+    {
+      key: 'createdAt',
+      header: 'Timestamp',
+      render: (row: any) => <span className="text-gray-500 font-mono text-xs">{formatDate(row.createdAt)}</span>
+    }
+  ];
 
   return (
-    <div className="min-h-screen">
-      <AdminHeader 
-        title="Overview" 
-        description="Monitor your portfolio inquiries and lead acquisition"
-      />
-
-      <div className="p-8 space-y-8">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Total Inquiries"
-            value={statsLoading ? '...' : ((stats?.inquiries?.total ?? 0).toLocaleString())}
-            change="+12%"
-            trend="up"
-            icon={
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            }
-          />
-          <StatCard
-            title="New Requests"
-            value={statsLoading ? '...' : ((stats?.inquiries?.byStatus?.NEW ?? 0).toString())}
-            change="+8%"
-            trend="up"
-            icon={
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            }
-          />
-          <StatCard
-            title="Pending Follow-ups"
-            value={statsLoading ? '...' : (((stats?.inquiries?.byStatus?.IN_PROGRESS ?? 0) + (stats?.inquiries?.byStatus?.CONTACTED ?? 0)).toString())}
-            change="-2%"
-            trend="down"
-            icon={
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            }
-          />
-          <StatCard
-            title="Conversion Rate"
-            value={statsLoading ? '...' : `${(((stats?.inquiries?.byStatus?.CONVERTED ?? 0) / (stats?.inquiries?.total ?? 1)) * 100).toFixed(1)}%`}
-            change="+3.2%"
-            trend="up"
-            icon={
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            }
-          />
+    <div className="min-h-screen p-6 md:p-10 space-y-8">
+      
+      {/* Dashboard Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-black text-white tracking-tight">System Control Center</h1>
+          <p className="text-sm font-mono text-gray-500 mt-1">DEV_OS_V3 // ACTIVE_SESSION</p>
         </div>
-
-        {/* Lead Velocity Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-[#0f0f0f]/80 backdrop-blur-md border border-gray-800/80 rounded-2xl p-6 shadow-lg relative overflow-hidden"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-white mb-1">Lead Velocity</h2>
-              <p className="text-sm text-gray-400">Overview of monthly portfolio inquiries and lead acquisition</p>
-            </div>
-            <div className="flex gap-2">
-              <button className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium">Monthly</button>
-              <button className="px-4 py-2 bg-[#0f1419] text-gray-400 hover:text-white rounded-lg text-sm font-medium transition-colors">Weekly</button>
-              <button className="px-4 py-2 bg-[#0f1419] text-gray-400 hover:text-white rounded-lg text-sm font-medium transition-colors">Daily</button>
-            </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 px-4 py-2 bg-[#111] rounded-full border border-gray-800 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+            <div className={`w-2.5 h-2.5 rounded-full shadow-[0_0_10px_currentColor] ${syncStatus === 'synced' ? 'bg-green-500 text-green-500' : 'bg-yellow-500 text-yellow-500 animate-pulse'}`} />
+            <span className="text-xs font-bold text-gray-300 font-mono tracking-wider">{syncStatus === 'synced' ? 'SYNCED' : 'SAVING...'}</span>
           </div>
-          
-          {/* Simple Chart Visualization */}
-          <div className="h-64 flex items-end gap-4">
-            {['JAN', 'MAR', 'MAY', 'JUL', 'SEP', 'NOV', 'DEC'].map((month, i) => {
-              const heights = [40, 55, 65, 75, 60, 45, 80];
-              return (
-                <div key={month} className="flex-1 flex flex-col items-center gap-2">
-                  <motion.div
-                    initial={{ height: 0 }}
-                    animate={{ height: `${heights[i]}%` }}
-                    transition={{ delay: i * 0.1, duration: 0.5 }}
-                    className="w-full bg-gradient-to-t from-purple-600 to-purple-400 rounded-t-lg relative group cursor-pointer"
-                  >
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 px-2 py-1 rounded text-xs text-white whitespace-nowrap">
-                      {Math.floor(heights[i] * 15)} inquiries
-                    </div>
-                  </motion.div>
-                  <span className="text-xs text-gray-500">{month}</span>
-                </div>
-              );
-            })}
-          </div>
-        </motion.div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Recent Inquiries */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="lg:col-span-2 bg-[#0f0f0f]/80 backdrop-blur-md border border-gray-800/80 rounded-2xl p-6 shadow-lg relative overflow-hidden"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">Recent Inquiries</h2>
-              <Link href="/admin/inquiries" className="text-purple-400 hover:text-purple-300 text-sm font-medium">
-                View All
-              </Link>
-            </div>
-
-            <div className="space-y-3">
-              {/* Table Header */}
-              <div className="grid grid-cols-12 gap-4 text-xs font-semibold text-gray-400 uppercase pb-3 border-b border-gray-800">
-                <div className="col-span-3">Client</div>
-                <div className="col-span-3">Project Type</div>
-                <div className="col-span-2">Budget</div>
-                <div className="col-span-2">Status</div>
-                <div className="col-span-2">Time</div>
-              </div>
-
-              {/* Table Rows */}
-              {recentInquiries?.data.slice(0, 3).map((inquiry) => (
-                <div key={inquiry.id} className="grid grid-cols-12 gap-4 items-center py-3 border-b border-gray-800/50 hover:bg-[#0f1419] rounded-lg transition-colors px-2">
-                  <div className="col-span-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-purple-600/20 rounded-full flex items-center justify-center text-purple-400 font-semibold text-sm">
-                        {inquiry.clientName[0]}
-                      </div>
-                      <div>
-                        <p className="text-white font-medium text-sm">{inquiry.clientName}</p>
-                        <p className="text-gray-500 text-xs">{inquiry.email}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-span-3">
-                    <span className="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs font-medium">
-                      {inquiry.companyName || '—'}
-                    </span>
-                  </div>
-                  <div className="col-span-2 text-white text-sm">
-                    {inquiry.budgetRange || 'N/A'}
-                  </div>
-                  <div className="col-span-2">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      inquiry.status === 'NEW' ? 'bg-green-600/20 text-green-400' :
-                      inquiry.status === 'IN_PROGRESS' ? 'bg-yellow-600/20 text-yellow-400' :
-                      inquiry.status === 'CONTACTED' ? 'bg-blue-600/20 text-blue-400' :
-                      'bg-purple-600/20 text-purple-400'
-                    }`}>
-                      {inquiry.status}
-                    </span>
-                  </div>
-                  <div className="col-span-2 text-gray-400 text-sm">
-                    {formatDate(inquiry.createdAt)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Action Items */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-[#0f0f0f]/80 backdrop-blur-md border border-gray-800/80 rounded-2xl p-6 shadow-lg relative overflow-hidden"
-          >
-            <h2 className="text-xl font-bold text-white mb-6">Action Items</h2>
-            
-            <div className="space-y-4">
-              <div className="p-4 bg-purple-600/10 border border-purple-600/20 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-white font-medium text-sm mb-1">Discovery Call</h3>
-                    <p className="text-gray-400 text-xs">with John Doe @ 2:00 PM</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 bg-blue-600/10 border border-blue-600/20 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-white font-medium text-sm mb-1">Send Proposal</h3>
-                    <p className="text-gray-400 text-xs">Project due in 2 hrs 38 m</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 bg-green-600/10 border border-green-600/20 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-green-600 rounded flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-white font-medium text-sm mb-1">Follow up: Sarah</h3>
-                    <p className="text-gray-400 text-xs">Sent 3 days ago</p>
-                  </div>
-                </div>
-              </div>
-
-              <button className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Create New Task
-              </button>
-            </div>
-          </motion.div>
+          <SystemButton variant="primary" onClick={triggerSync}>Manual Sync</SystemButton>
         </div>
       </div>
+
+      {/* Primary Metrics */}
+      <ControlModule 
+        title="Acquisition Metrics" 
+        icon="📊"
+        statusLabel="LIVE STREAM"
+        statusColor="green"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-[#151515] p-5 rounded-xl border border-gray-800 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">📈</div>
+            <p className="text-sm font-bold text-gray-500 mb-1">Total Inquiries</p>
+            <div className="flex items-end gap-3">
+              <h3 className="text-3xl font-black text-white">{statsLoading ? '...' : (stats?.inquiries?.total ?? 0)}</h3>
+              <span className="text-sm font-bold text-green-400 mb-1">+12%</span>
+            </div>
+          </div>
+          <div className="bg-[#151515] p-5 rounded-xl border border-gray-800 relative overflow-hidden group">
+            <p className="text-sm font-bold text-gray-500 mb-1">New Leads</p>
+            <div className="flex items-end gap-3">
+              <h3 className="text-3xl font-black text-white">{statsLoading ? '...' : (stats?.inquiries?.byStatus?.NEW ?? 0)}</h3>
+              <span className="text-sm font-bold text-green-400 mb-1">+8%</span>
+            </div>
+          </div>
+          <div className="bg-[#151515] p-5 rounded-xl border border-gray-800 relative overflow-hidden group">
+            <p className="text-sm font-bold text-gray-500 mb-1">Conversion Rate</p>
+            <div className="flex items-end gap-3">
+              <h3 className="text-3xl font-black text-white">{statsLoading ? '...' : `${(((stats?.inquiries?.byStatus?.CONVERTED ?? 0) / (stats?.inquiries?.total ?? 1)) * 100).toFixed(1)}%`}</h3>
+              <span className="text-sm font-bold text-blue-400 mb-1">Steady</span>
+            </div>
+          </div>
+          <div className="bg-[#151515] p-5 rounded-xl border border-gray-800 relative overflow-hidden flex flex-col justify-center">
+             <button className="w-full h-full py-2 bg-purple-900/20 text-purple-400 font-bold border border-purple-500/20 rounded-lg hover:bg-purple-900/40 transition-colors shadow-inner flex items-center justify-center gap-2">
+               <span>+</span> Generate Report
+             </button>
+          </div>
+        </div>
+      </ControlModule>
+
+      {/* Dual Layout: Data Grid + Actions */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+        
+        {/* Interactive Data Grid Module */}
+        <div className="xl:col-span-2">
+          <ControlModule 
+            title="Inquiry Databank" 
+            icon="🗄️" 
+            statusLabel={`${recentInquiries?.data?.length || 0} ACTIVE`}
+            statusColor="blue"
+            className="h-[600px] flex flex-col"
+          >
+            <div className="h-full flex flex-col -mx-6 -my-6">
+              <InteractiveDataGrid 
+                data={recentInquiries?.data || []}
+                columns={columns}
+                keyExtractor={(row: any) => row.id}
+                searchTokens={(row: any) => `${row.clientName} ${row.email} ${row.companyName}`}
+              />
+            </div>
+          </ControlModule>
+        </div>
+
+        {/* Action Items / Workflows */}
+        <div className="space-y-8">
+          <ControlModule title="Workflow Engine" icon="⚡" statusLabel="3 PENDING" statusColor="yellow">
+            <div className="space-y-3">
+              <div className="p-3 bg-purple-900/10 border border-purple-900/30 hover:border-purple-600/50 rounded-lg transition-colors cursor-pointer group">
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="text-sm font-bold text-white group-hover:text-purple-400 transition-colors">Discovery Call</h4>
+                  <span className="text-xs font-mono bg-purple-900/50 text-purple-400 px-2 py-0.5 rounded border border-purple-500/20">2:00 PM</span>
+                </div>
+                <p className="text-xs text-gray-500 font-mono">John Doe • System Integration</p>
+              </div>
+
+              <div className="p-3 bg-[#151515] border border-gray-800 hover:border-gray-600 rounded-lg transition-colors cursor-pointer group">
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">Draft Proposal</h4>
+                  <span className="text-xs font-mono bg-blue-900/20 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">DUE 4H</span>
+                </div>
+                <p className="text-xs text-gray-500 font-mono">Acme Corp • Frontend Renewal</p>
+              </div>
+
+              <div className="p-3 bg-[#151515] border border-gray-800 hover:border-gray-600 rounded-lg transition-colors cursor-pointer group">
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="text-sm font-bold text-white group-hover:text-green-400 transition-colors">Client Follow-up</h4>
+                  <span className="text-xs font-mono bg-green-900/20 text-green-400 px-2 py-0.5 rounded border border-green-500/20">DUE SOON</span>
+                </div>
+                <p className="text-xs text-gray-500 font-mono">Sarah Tech • Waiting for docs</p>
+              </div>
+
+              <SystemButton variant="secondary" className="w-full mt-4" size="sm">
+                + Create Workflow Node
+              </SystemButton>
+            </div>
+          </ControlModule>
+          
+          <ControlModule title="System Log" icon="👁️" defaultExpanded={false}>
+            <div className="space-y-2 font-mono text-xs p-2 bg-[#0a0a0c] border border-gray-800 rounded-lg shadow-inner">
+               <div className="text-gray-500"><span className="text-green-500">2026-03-24</span> System Initialized via secure auth</div>
+               <div className="text-gray-500"><span className="text-blue-500">2026-03-24</span> Sync: 4 changes pushed to cloud</div>
+               <div className="text-gray-500"><span className="text-purple-500">2026-03-24</span> New Inquiry [ID:74892] detected</div>
+            </div>
+          </ControlModule>
+        </div>
+
+      </div>
+
     </div>
   );
 }
