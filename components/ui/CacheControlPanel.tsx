@@ -131,10 +131,10 @@ export function DevCacheResetButton() {
   return (
     <button
       onClick={handleDevReset}
-      className="fixed top-4 left-4 bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-2 rounded-lg shadow-lg z-50"
+      className="fixed bottom-16 right-4 bg-red-500/80 hover:bg-red-600 text-white text-[10px] px-2 py-1 rounded shadow-lg z-50 transition-colors"
       title="DEV: Nuclear Cache Reset"
     >
-      🧹 Dev Reset
+      🧹 Reset
     </button>
   );
 }

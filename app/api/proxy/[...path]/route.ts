@@ -22,9 +22,14 @@ async function proxyRequest(request: NextRequest, method: string): Promise<NextR
 
     const requestHeaders: HeadersInit = {};
 
+    const tokenFromQuery = url.searchParams.get('token');
     const authHeader = request.headers.get('authorization');
+    
     if (authHeader) {
       requestHeaders['Authorization'] = authHeader;
+    } else if (tokenFromQuery) {
+      // Allow passing token in URL for downloads (e.g. PDFs)
+      requestHeaders['Authorization'] = `Bearer ${tokenFromQuery}`;
     }
 
     const contentType = request.headers.get('content-type') || '';
@@ -33,7 +38,7 @@ async function proxyRequest(request: NextRequest, method: string): Promise<NextR
     let body: BodyInit | undefined;
     if (['POST', 'PUT', 'PATCH'].includes(method)) {
       if (isMultipart) {
-        // Pass form data through directly — do NOT set Content-Type so the browser boundary is preserved
+        // Pass form data through directly
         body = await request.formData();
       } else {
         requestHeaders['Content-Type'] = 'application/json';
@@ -54,25 +59,36 @@ async function proxyRequest(request: NextRequest, method: string): Promise<NextR
 
     console.log(`📊 Backend response status: ${backendResponse.status}`);
 
-    const responseText = await backendResponse.text();
-    let responseData: any;
-    try {
-      responseData = JSON.parse(responseText);
-    } catch {
-      responseData = responseText ? { message: responseText } : { success: true };
-    }
+    const outHeaders = new Headers(backendResponse.headers);
+    // Node fetch automatically decompresses the response, so we must remove these headers
+    // otherwise the browser will try to decompress an already-decompressed stream, corrupting binaries
+    outHeaders.delete('content-encoding');
+    outHeaders.delete('content-length');
+    Object.entries(CORS_HEADERS).forEach(([k, v]) => outHeaders.set(k, v));
 
     if (!backendResponse.ok) {
-      console.error(`❌ Backend error: ${backendResponse.status} - ${responseText}`);
-      return NextResponse.json(responseData, {
-        status: backendResponse.status,
-        headers: CORS_HEADERS,
-      });
+      console.error(`❌ Backend error: ${backendResponse.status}`);
+      // Return as JSON if it was an error
+      let errorBody = await backendResponse.text();
+      try {
+        errorBody = JSON.parse(errorBody);
+        return NextResponse.json(errorBody, {
+          status: backendResponse.status,
+          headers: outHeaders,
+        });
+      } catch {
+        // Return raw if not JSON
+        return new NextResponse(errorBody, {
+          status: backendResponse.status,
+          headers: outHeaders,
+        });
+      }
     }
 
-    return NextResponse.json(responseData, {
+    // Proxy the response stream directly to support PDFs, Exports, and JSON natively
+    return new NextResponse(backendResponse.body, {
       status: backendResponse.status,
-      headers: CORS_HEADERS,
+      headers: outHeaders,
     });
 
   } catch (error) {

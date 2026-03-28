@@ -57,39 +57,13 @@ export function IDESidebar() {
           ease: 'easeInOut',
         }}
         className={`border-r border-gray-800/60 flex flex-col h-screen z-50 shadow-[4px_0_24px_rgba(0,0,0,0.5)] transition-colors ${
-          isMobile ? 'fixed inset-y-0 left-0 overflow-hidden' : 'relative shrink-0'
+          isMobile ? 'fixed inset-y-0 left-0' : 'relative shrink-0'
         }`}
         style={{ backgroundColor: 'color-mix(in srgb, var(--bg-color) 90%, black)' }}
       >
-      {/* Toggle Button */}
-      <button
-        onClick={togglePortfolioSidebar}
-        className="absolute -right-3 top-3 w-6 h-6 border rounded-full flex items-center justify-center text-gray-500 hover:text-white transition-all z-20 shadow-lg"
-        style={{ 
-          backgroundColor: 'color-mix(in srgb, var(--bg-color) 95%, black)',
-          borderColor: 'color-mix(in srgb, var(--accent-color) 30%, gray)'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'var(--accent-color)';
-          e.currentTarget.style.borderColor = 'var(--accent-color)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--bg-color) 95%, black)';
-          e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--accent-color) 30%, gray)';
-        }}
-      >
-        <motion.svg
-          animate={{ rotate: portfolioSidebarOpen ? 0 : 180 }}
-          transition={{ duration: 0.3 }}
-          className="w-3 h-3"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </motion.svg>
-      </button>
+      {/* Toggle Button removed - now controlled by top navigation bar */}
 
+      <div className={`flex flex-col h-full w-full ${isMobile ? 'overflow-hidden' : ''}`}>
       {/* Explorer header */}
       <div className="px-4 py-3 border-b border-gray-800/60 flex items-center justify-between" style={{ backgroundColor: 'color-mix(in srgb, var(--bg-color) 80%, black)' }}>
         <motion.span
@@ -297,6 +271,7 @@ export function IDESidebar() {
           </div>
         </div>
       )}
+      </div>
     </motion.aside>
     </>
   );

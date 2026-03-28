@@ -130,7 +130,7 @@ export default function ServicesPage() {
         {/* Category Filter removed - services have no category field */}
 
         {/* Services Grid */}
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filteredServices.map((service, index) => (
               <motion.div
                 key={service.id}
@@ -264,7 +264,7 @@ export default function ServicesPage() {
                     </motion.div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-300 mb-2">
                         Full Name <span className="text-pink-500">*</span>
@@ -318,7 +318,7 @@ export default function ServicesPage() {
                     </select>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-300 mb-2">
                         Company
@@ -347,7 +347,7 @@ export default function ServicesPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-300 mb-2">
                         Budget Range

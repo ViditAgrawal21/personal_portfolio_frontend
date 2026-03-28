@@ -64,15 +64,43 @@ function HireRequestsContent() {
     }
   };
 
-  // PDF Download Function - Uses Backend API
-  const downloadHireRequestPDF = (request: HireRequest) => {
+  const downloadHireRequestPDF = async (request: HireRequest) => {
     if (!token) {
       alert('Authentication required');
       return;
     }
 
-    const url = `${API_ENDPOINTS.hireRequestPdf(request.id)}?token=${encodeURIComponent(token)}`;
-    window.open(url, '_blank');
+    try {
+      const response = await fetch(API_ENDPOINTS.hireRequestPdf(request.id), {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('PDF download failed');
+      }
+
+      const blob = await response.blob();
+      if (blob.type === 'application/json') {
+        const text = await blob.text();
+        console.error('Backend returned JSON instead of PDF:', text);
+        throw new Error('Invalid response format');
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const safeName = (request.candidateName || 'candidate').replace(/[^a-z0-9]/gi, '-').toLowerCase();
+      link.download = `hire-request-${safeName}-${request.id.substring(0, 6)}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('PDF download failed:', error);
+      alert('Failed to download PDF. Please try again.');
+    }
   };
 
   // Send Reply Email Function

@@ -42,7 +42,7 @@ export default function PortfolioLayout({
   const [showTransition, setShowTransition] = useState(true);
   const [openTabs, setOpenTabs] = useState<string[]>(['about']);
   const [terminalOpen, setTerminalOpen] = useState(true);
-  const { portfolioSidebarOpen } = useUIStore();
+  const { portfolioSidebarOpen, togglePortfolioSidebar } = useUIStore();
 
   useEffect(() => {
     // Check if coming from intro
@@ -87,6 +87,17 @@ export default function PortfolioLayout({
             {/* Left: Logo and menus */}
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 group cursor-pointer">
+                {/* Panel Toggle Menu (Mobile + Desktop) */}
+                <button
+                  onClick={togglePortfolioSidebar}
+                  className="p-1.5 text-gray-400 hover:text-white rounded-md transition-colors border border-transparent hover:border-gray-800"
+                  title="Toggle Sidebar"
+                >
+                  <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" strokeWidth={2} />
+                    <line x1="9" y1="3" x2="9" y2="21" strokeWidth={2} />
+                  </svg>
+                </button>
                 <div className="w-7 h-7 flex-shrink-0 rounded-md flex items-center justify-center shadow-lg transition-all" style={{ background: 'var(--accent-color)', boxShadow: '0 0 10px var(--accent-color)' }}>
                   <span className="text-white text-xs font-bold leading-none">V</span>
                 </div>
@@ -243,10 +254,10 @@ export default function PortfolioLayout({
               <span>⚡ 0.1.11</span>
             </div>
             <div className="flex items-center gap-4">
-              <span>Spaces: 2</span>
-              <span>UTF-8</span>
-              <span>JavaScript React</span>
-              <span>⚡ Prettier</span>
+              <span className="hidden md:block">Spaces: 2</span>
+              <span className="hidden md:block">UTF-8</span>
+              <span className="hidden sm:block">JavaScript React</span>
+              <span className="hidden sm:block">⚡ Prettier</span>
               <button
                 onClick={() => setTerminalOpen(!terminalOpen)}
                 className="flex items-center gap-1 hover:bg-purple-700 px-2 py-0.5 rounded transition-colors"

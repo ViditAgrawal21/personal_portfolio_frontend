@@ -120,7 +120,7 @@ export default function ProjectsPage() {
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="font-mono text-sm mb-12"
+          className="font-mono text-xs sm:text-sm mb-12 overflow-x-auto"
         >
           <span className="text-gray-500">{'{'}</span><br/>
           <span className="text-gray-500 ml-4">"file": <span className="text-green-300">"projects.json"</span>,</span><br/>
@@ -134,10 +134,10 @@ export default function ProjectsPage() {
           transition={{ delay: 0.2 }}
         >
           {/* Header with filters */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">Featured Projects</h1>
-              <p className="text-gray-400 font-mono text-sm">
+              <p className="text-gray-400 font-mono text-xs sm:text-sm">
                 <span className="font-bold" style={{ color: 'var(--accent-color)' }}>const</span> <span className="text-blue-300">projects</span> = <span className="text-green-300">fetch</span>(<span className="text-orange-300">'/api/projects'</span>);
               </p>
             </div>
