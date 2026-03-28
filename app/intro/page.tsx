@@ -64,33 +64,65 @@ export default function IntroPage() {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      if (isTransitioning) return;
+    let touchStartY = 0;
 
+    const handleNext = () => {
+      if (isTransitioning) return;
+      if (currentSlide < slides.length - 1) {
+        setIsTransitioning(true);
+        setCurrentSlide(prev => prev + 1);
+        setTimeout(() => setIsTransitioning(false), 800);
+      } else {
+        // Last slide completed - trigger IDE transition
+        sessionStorage.setItem('fromIntro', 'true');
+        router.push('/portfolio/about');
+      }
+    };
+
+    const handlePrev = () => {
+      if (isTransitioning) return;
+      if (currentSlide > 0) {
+        setIsTransitioning(true);
+        setCurrentSlide(prev => prev - 1);
+        setTimeout(() => setIsTransitioning(false), 800);
+      }
+    };
+
+    const handleWheel = (e: WheelEvent) => {
       if (e.deltaY > 50) {
-        // Scroll down
-        if (currentSlide < slides.length - 1) {
-          setIsTransitioning(true);
-          setCurrentSlide(prev => prev + 1);
-          setTimeout(() => setIsTransitioning(false), 800);
-        } else {
-          // Last slide completed - trigger IDE transition
-          sessionStorage.setItem('fromIntro', 'true');
-          router.push('/portfolio/about');
-        }
+        handleNext();
       } else if (e.deltaY < -50) {
-        // Scroll up
-        if (currentSlide > 0) {
-          setIsTransitioning(true);
-          setCurrentSlide(prev => prev - 1);
-          setTimeout(() => setIsTransitioning(false), 800);
-        }
+        handlePrev();
+      }
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      const touchEndY = e.changedTouches[0].clientY;
+      const deltaY = touchStartY - touchEndY;
+      
+      if (deltaY > 50) {
+        // Swipe up (scroll down)
+        handleNext();
+      } else if (deltaY < -50) {
+        // Swipe down (scroll up)
+        handlePrev();
       }
     };
 
     window.addEventListener('wheel', handleWheel, { passive: true });
-    return () => window.removeEventListener('wheel', handleWheel);
-  }, [currentSlide, isTransitioning, router]);
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [currentSlide, isTransitioning, router, slides.length]);
 
   const slide = slides[currentSlide];
 
