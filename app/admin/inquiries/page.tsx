@@ -67,45 +67,26 @@ function ServiceInquiriesContent() {
     }
   };
 
-  const downloadInquiryPDF = async (inquiry: ServiceInquiry) => {
+  // Mailto helper
+  const openMailClient = (email: string | undefined, subject = 'Regarding your inquiry') => {
+    if (!email || !email.includes('@')) {
+      alert('No valid email address is available for this inquiry.');
+      return;
+    }
+
+    const mailtoUrl = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}`;
+    window.location.href = mailtoUrl;
+  };
+
+  // PDF Download Function - Uses Backend API
+  const downloadInquiryPDF = (inquiry: ServiceInquiry) => {
     if (!token) {
       alert('Authentication required');
       return;
     }
 
-    try {
-      const response = await fetch(API_ENDPOINTS.inquiryPdf(inquiry.id), {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('PDF download failed');
-      }
-
-      const blob = await response.blob();
-      // Handle json error responses that got caught as blob accidentally (if backend returns 200 json by mistake)
-      if (blob.type === 'application/json') {
-        const text = await blob.text();
-        console.error('Backend returned JSON instead of PDF:', text);
-        throw new Error('Invalid response format');
-      }
-
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      // Default to a safe filename
-      const safeName = (inquiry.clientName || 'client').replace(/[^a-z0-9]/gi, '-').toLowerCase();
-      link.download = `inquiry-${safeName}-${inquiry.id.substring(0, 6)}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('PDF download failed:', error);
-      alert('Failed to download PDF. Please try again.');
-    }
+    const url = `${API_ENDPOINTS.inquiryPdf(inquiry.id)}?token=${encodeURIComponent(token)}`;
+    window.open(url, '_blank');
   };
 
   // Send Reply Email Function
@@ -539,7 +520,14 @@ function ServiceInquiriesContent() {
                   </div>
                   <div>
                     <label className="text-sm text-gray-400">Email</label>
-                    <p className="text-white font-medium">{viewingInquiry.email}</p>
+                    <a
+                      href={`mailto:${viewingInquiry.email}?subject=${encodeURIComponent(`Regarding your inquiry - ${viewingInquiry.clientName}`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300 font-medium underline underline-offset-4 break-all"
+                    >
+                      {viewingInquiry.email}
+                    </a>
                   </div>
                 </div>
               </div>
@@ -626,6 +614,17 @@ function ServiceInquiriesContent() {
                   </svg>
                   Download PDF
                 </button>
+                <a
+                  href={`mailto:${viewingInquiry.email}?subject=${encodeURIComponent(`Regarding your inquiry - ${viewingInquiry.clientName}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  Mail to Client
+                </a>
                 <button
                   onClick={() => {
                     setViewingInquiry(null);
